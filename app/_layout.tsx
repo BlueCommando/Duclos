@@ -5,11 +5,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <Stack screenOptions={{headerShown: false}}>
-        <Stack.Screen name = "modes" options={
-            {
-              title:"home💔💔"
-            }
-          }/>
+        <Stack.Screen name = "modes"/>
       </Stack>
     </ThemeProvider>
   )

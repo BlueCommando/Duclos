@@ -2,6 +2,8 @@ import { View, Text, useColorScheme } from 'react-native'
 import React from 'react'
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
+// Detects if user is using light mode or dark mode
+
 export interface ColorScheme {
   bg: string;
   surface: string;

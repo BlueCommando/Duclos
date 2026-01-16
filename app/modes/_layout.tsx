@@ -1,8 +1,7 @@
-import { View, Text, Image } from 'react-native'
-import React from 'react'
-import { Tabs } from 'expo-router'
-import { Ionicons } from '@expo/vector-icons'
 import useTheme from '@/hooks/useTheme'
+import { Tabs } from 'expo-router'
+import React from 'react'
+import { Image, Text } from 'react-native'
 
 const modesLayout = () => {
   const colors = useTheme()
@@ -11,10 +10,10 @@ const modesLayout = () => {
     <Tabs
       screenOptions={{
         tabBarStyle: {
-          backgroundColor: colors.primary,
+          backgroundColor: colors.surface,
 
-          borderTopWidth: 10,
-          borderColor: "yellow",
+          borderTopWidth: 1,
+          borderColor: colors.border,
 
           paddingTop: 10,
           height: 100,
@@ -53,6 +52,40 @@ const modesLayout = () => {
       }
       />
 
+      <Tabs.Screen
+        name='advancedImagery'
+        options={{
+          tabBarLabel: ({ color }) => ( 
+            <Text style={{ 
+              color, 
+              textAlign: "center", 
+              flexWrap: "wrap", }} 
+            > Advanced Imagery </Text> 
+          ),
+          
+          tabBarIcon: ({size}) => (
+            <Image
+              source={require("../assets/images/wally.png")}
+              style={{ width: size, height: size }}
+            />
+          )
+        }
+      }
+      />
+
+      <Tabs.Screen
+        name='settings'
+        options={{
+          title: "Settings",
+          tabBarIcon: ({size}) => (
+            <Image
+              source={require("../assets/images/wally.png")}
+              style={{ width: size, height: size }}
+            />
+          )
+        }
+      }
+      />
 
     </Tabs>
   )
