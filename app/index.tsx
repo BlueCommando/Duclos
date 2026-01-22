@@ -1,14 +1,51 @@
+//import "../polyfills"
 import { createChatStyle } from "@/assets/styles/chat.style";
+import aiService from '@/components/ai/aiService';
 import InputText from "@/components/chat/inputText";
 import useTheme from "@/hooks/useTheme";
 import { LinearGradient } from 'expo-linear-gradient';
-import { Platform, Text } from "react-native";
+import { Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import settings from "@/ai/settings.json";
-import { getIpAddressAsync } from "expo-network";
-import { useEffect, useState } from "react";
+
+//FS.copyFile("./DeepSeek-R1-Distill-Qwen-1.5B-Q3_K_L", FS.DocumentDirectoryPath)
+
+const test = async (msg: string) => {
+  console.log("loading model...");
+  await aiService.init();
+  const response = await aiService.completion({
+    messages: [
+      {
+        role: "user",
+        content: msg,
+      }
+    ]
+  })
+  
+  /*
+  await llamaService.initialize()
+
+  const response = await llamaService.completion([
+    {
+      role: "user",
+      content: msg
+    },
+  ])
+
+  llamaService.cleanup()
+
+  return response
+  */
+  //*
+  console.log("Response complete!")
+  return response.text
+  //*/
+}
+
+// try 'https://github.com/mybigday/llama.rn' instead...
+
 
 export default function Index() {
+  /*
   const [ip, setIp] = useState("0.0.0.0");
 
   useEffect(() => {
@@ -20,19 +57,21 @@ export default function Index() {
   }, []); // empty array = run once
 
   console.log("Users IP:", ip);
+  */
 
 
   const colors = useTheme()
   const chatStyle = createChatStyle(colors)
 
-  const handleMsg = (msg: string) => {
+  const handleMsg = async (msg: string) => {
     if (msg.trim() === ""){
       return
     }
 
     console.log(msg)
-    // see if message has unnatural characters from auto correct
+    console.log(await test(msg))
 
+    /*
     const aiServerAddress = `http://${ip}:${settings.port}`
 
     const responseProm = fetch(aiServerAddress, {
@@ -54,6 +93,7 @@ export default function Index() {
     }).catch(errorMsg => {
       console.error(`(Address: ${aiServerAddress}) Error while sending to server:`, errorMsg)
     })
+      */
   }
 
   return (
