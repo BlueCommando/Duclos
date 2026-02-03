@@ -1,65 +1,75 @@
-//import "../polyfills"
 import { createChatStyle } from "@/assets/styles/chat.style";
 import aiService from '@/components/ai/aiService';
 import InputText from "@/components/chat/inputText";
 import useTheme from "@/hooks/useTheme";
 import { LinearGradient } from 'expo-linear-gradient';
-import { Text } from "react-native";
+import { Image, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-//FS.copyFile("./DeepSeek-R1-Distill-Qwen-1.5B-Q3_K_L", FS.DocumentDirectoryPath)
+const math = `
+  If you're solving a math related problem,
+  Always solve the problems using the following structure:
+
+  1. Restate the problem in one sentence.
+  2. List the known values.
+  3. Write the correct formula.
+  4. Substitute the values into the formula.
+  5. Compute step by step.
+  6. Give the final answer clearly.
+
+  Do not repeat lines.  
+  Do not restate formulas more than once.  
+  Do not invent new variables.  
+  Do not explain concepts unless asked.  
+  Keep the solution concise and structured.
+`
 
 const test = async (msg: string) => {
-  console.log("loading model...");
-  await aiService.init();
-  const response = await aiService.completion({
+  await aiService.init({
+    downloadModel: res => {
+      console.log("AI Model Download:", res.bytesWritten / res.contentLength)
+    },
+    downloadMMProj: res => {
+      console.log("MMProj Download:", res.bytesWritten / res.contentLength)
+    },
+    initModel: alpha => {
+      console.log("initing AI Model:", alpha)
+    },
+    onMMProjInited: () => {
+      console.log("MMProj inited!")
+    }
+  });
+
+  const response = await aiService.imageCompletion({
     messages: [
       {
         role: "user",
-        content: msg,
+        content: [
+          {
+            type: "image_url",
+            image_url: {
+              url: await aiService.imageToBase64(require("./assets/images/q2.png")),
+            },
+          }
+        ],
+      },
+      {
+        role: "system",
+        content: "Your job is to solve the problem from the given image."
+      },
+      {
+        role: "system",
+        content: math,
       }
     ]
   })
-  
-  /*
-  await llamaService.initialize()
 
-  const response = await llamaService.completion([
-    {
-      role: "user",
-      content: msg
-    },
-  ])
-
-  llamaService.cleanup()
-
-  return response
-  */
-  //*
   console.log("Response complete!")
   return response.text
   //*/
 }
 
-// try 'https://github.com/mybigday/llama.rn' instead...
-
-
 export default function Index() {
-  /*
-  const [ip, setIp] = useState("0.0.0.0");
-
-  useEffect(() => {
-    if (Platform.OS == "android"){
-      setIp("10.0.2.2") // not working!
-    } else {
-      getIpAddressAsync().then(setIp);
-    }
-  }, []); // empty array = run once
-
-  console.log("Users IP:", ip);
-  */
-
-
   const colors = useTheme()
   const chatStyle = createChatStyle(colors)
 
@@ -68,32 +78,8 @@ export default function Index() {
       return
     }
 
-    console.log(msg)
+    console.log(`${msg}\n\n`)
     console.log(await test(msg))
-
-    /*
-    const aiServerAddress = `http://${ip}:${settings.port}`
-
-    const responseProm = fetch(aiServerAddress, {
-      method: "POST",
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: msg
-      }),
-    })
-    responseProm.then((response) => {
-      response.json().then(result => {
-        console.log(result)
-      }).catch(errorMsg => {
-        console.error(`(Address: ${aiServerAddress}) Error while trying to read response:`, errorMsg)
-      })
-    }).catch(errorMsg => {
-      console.error(`(Address: ${aiServerAddress}) Error while sending to server:`, errorMsg)
-    })
-      */
   }
 
   return (
@@ -105,6 +91,10 @@ export default function Index() {
         <Text>Edit app/index.tsx to edit this screen.</Text>
         <Text>I'm just like wally west!</Text>
         <InputText onSend={handleMsg} />
+        <Image
+          source={require("./assets/images/q2.png")}
+          style={{ width: 350, height: 150 }}
+        />
       </SafeAreaView>
     </LinearGradient>
   );
