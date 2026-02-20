@@ -12,11 +12,6 @@ import RNFS, { DownloadProgressCallbackResult } from 'react-native-fs';
 // Used Model Link:
 // https://huggingface.co/unsloth/Qwen2.5-VL-7B-Instruct-GGUF
 
-// TODO:
-// debug print func to clear the annoying prints. ✅
-// try to get the multimodal projector to work. ✅
-// try to make this get init in the index and report progress back to index. ❌
-
 const aiModelName = "aiModel.gguf";
 const aiModelDest = `${RNFS.DocumentDirectoryPath}/${aiModelName}`;
 const aiModelDownloadLink = "https://huggingface.co/unsloth/Qwen2.5-VL-7B-Instruct-GGUF/resolve/main/Qwen2.5-VL-7B-Instruct-UD-Q2_K_XL.gguf";
@@ -160,12 +155,8 @@ class aiService{
       const file = new File(asset.localUri!);
       const base64 = await file.base64();
       const ext = file.extension.slice(1);
-      const fullBase64 = `data:image/${ext};base64,${base64}`;
 
-      // rewrite this to make it look pretty
-      return new Promise((resolve, reject) => {
-        resolve(fullBase64)
-      });
+      return `data:image/${ext};base64,${base64}`;
     }
 
     async cleanUp(){
