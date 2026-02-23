@@ -1,6 +1,8 @@
+import appSettings from '@/assets/appSettings';
 import { Asset } from 'expo-asset';
 import { File } from 'expo-file-system';
 import { CompletionParams, initLlama, LlamaContext, NativeCompletionResult } from 'llama.rn';
+import DeviceInfo from 'react-native-device-info';
 import RNFS, { DownloadProgressCallbackResult } from 'react-native-fs';
 
 // Help with llama.rn:
@@ -46,8 +48,12 @@ type aiInitProgressFuncs = {
   downloadModel?: (res: DownloadProgressCallbackResult) => void,
   downloadMMProj?: (res: DownloadProgressCallbackResult) => void,
   initModel?: (percentage: number) => void,
-  onMMProjInited?: () => void,
 };
+
+type deviceRequirementCheck = {
+  requiredStorage: boolean,
+  requiredRAM: boolean,
+}
 
 class aiService{
     private context: LlamaContext | null = null;
@@ -72,6 +78,44 @@ class aiService{
         });
         await promise;
       }
+    }
+
+    /** 
+     * Checks if the users device can handle 
+     * downloading, initializing, and generating 
+     * the AI Model and Multimodal Projector.
+     * 
+     * The requirement(s) are:
+     *
+     * **- The Device must have 8,589,934,590 bytes (8.589 Gigabytes) bytes of free storage.**
+     * 
+     * **- The Device must have at least 4,000,000,000 bytes (4 Gigabytes) bytes of free RAM storage.**
+     * 
+     * ^ Requirements are changable in '@/assets/appSettings.tsx'
+    */
+    async deviceFillsRequirements(): Promise<deviceRequirementCheck> {
+      const check: deviceRequirementCheck = {
+        requiredStorage: false,
+        requiredRAM: false,
+      };
+
+      // Storage Check:
+      const freeStorage = await DeviceInfo.getFreeDiskStorage();
+
+      if (freeStorage >= appSettings.device.minDeviceFreeBytesStorage){
+        check.requiredStorage = true;
+      }
+
+      // Ram Check:
+      const totalRAM = await DeviceInfo.getTotalMemory();
+      const usedRAM = await DeviceInfo.getUsedMemory();
+      const freeRAM = totalRAM - usedRAM;
+
+      if (freeRAM >= appSettings.device.minDeviceFreeBytesRAM){
+        check.requiredRAM = true;
+      }
+
+      return check;
     }
 
     async init(progFuncs?: aiInitProgressFuncs) {

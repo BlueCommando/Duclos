@@ -1,3 +1,4 @@
+import aiService from '@/components/ai/aiService';
 import IntroText from '@/components/loadingScreen/IntroText';
 import LogoBox from '@/components/loadingScreen/LogoBox';
 import { router } from 'expo-router';
@@ -5,13 +6,27 @@ import { useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
-  // remove later
   useEffect(() => {
-    const timer = setTimeout(() => {
-      router.replace("./modes");
-    }, 2000);
+    const initAI = async () => {
+      //await aiService.deviceFillsRequirements()
 
-    return () => clearTimeout(timer);
+      await aiService.init({
+        downloadModel: res => {
+          console.log("AI Model Download:", res.bytesWritten / res.contentLength)
+        },
+        downloadMMProj: res => {
+          console.log("MMProj Download:", res.bytesWritten / res.contentLength)
+        },
+        initModel: alpha => {
+          console.log("initing AI Model:", alpha)
+        },
+      });
+
+      // Change to main thing
+      router.replace("./modes");
+    }
+
+    initAI();
   }, []);
 
   return (

@@ -40,7 +40,8 @@
           }
         }
       ],
-      "expo-build-properties",
+      "expo-build-properties"
+      /*
       [
         "llama.rn",
         {
@@ -50,6 +51,7 @@
           "enableOpenCL": true
         }
       ]
+      */
     ],
     "experiments": {
       "typedRoutes": true,
