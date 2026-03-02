@@ -2,8 +2,20 @@ import appSettings from '@/assets/appSettings';
 import { Asset } from 'expo-asset';
 import { File } from 'expo-file-system';
 import { CompletionParams, initLlama, LlamaContext, NativeCompletionResult } from 'llama.rn';
+import { BackHandler } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import RNFS, { DownloadProgressCallbackResult } from 'react-native-fs';
+import NetInfo from "@react-native-community/netinfo";
+
+// Things to do:
+//
+// Check Wifi ✅
+// Delete Files if the app is closed ✅
+// Save data that the user actually fully downloaded the model ❌
+// Change AI to settings file (userDataService?) ❌
+// Kick user if errors ❌
+// Loading bar (4 phases, downloading model and mmproj and initing them) (and wait 3 secs after) ❌
+// Update loading screen to support dark-mode and light-mode (including status bar) ❌
 
 // Help with llama.rn:
 // https://github.com/mybigday/llama.rn/blob/main/README.md
@@ -13,6 +25,22 @@ import RNFS, { DownloadProgressCallbackResult } from 'react-native-fs';
 //
 // Used Model Link:
 // https://huggingface.co/unsloth/Qwen2.5-VL-7B-Instruct-GGUF
+
+/*Shutdown app with alert:
+
+Alert.alert("WARNING:", "Your Device does not meet the standard requirements of something", [
+  { text: "Cancel", onPress: () => console.log("Cancel Pressed") },
+  { text: "OK", onPress: () => BackHandler.exitApp() }
+])
+*/
+
+// Downloads:
+
+// Download async-storage to save that the model is fully downloaded:
+// npm i @react-native-async-storage/async-storage
+
+// use this for wifi check:
+// npm i @react-native-community/netinfo
 
 const aiModelName = "aiModel.gguf";
 const aiModelDest = `${RNFS.DocumentDirectoryPath}/${aiModelName}`;
@@ -38,84 +66,142 @@ const imageCompletionMessage = [
   },
 ];
 
-const debugMode = true;
-const debugPrint = (...msg: any[]) => {
-  if (!debugMode) return;
-  console.log(msg)
-};
-
 type aiInitProgressFuncs = {
   downloadModel?: (res: DownloadProgressCallbackResult) => void,
   downloadMMProj?: (res: DownloadProgressCallbackResult) => void,
   initModel?: (percentage: number) => void,
 };
 
-type deviceRequirementCheck = {
-  requiredStorage: boolean,
-  requiredRAM: boolean,
+type deviceState = {
+  hasWifi: boolean,
+  freeStorage: number,
+  totalRAM: number,
+  usedRAM: number,
+  freeRAM: number,
 }
 
 class aiService{
     private context: LlamaContext | null = null;
 
+    /** 
+     * Returns the phones wifi status, free storage, total RAM, used RAM, and free RAM.
+    */
+    async getDeviceState(): Promise<deviceState> {
+      const check: deviceState = {
+        hasWifi: false,
+        freeStorage: 0,
+        totalRAM: 0,
+        usedRAM: 0,
+        freeRAM: 0,
+      };
+
+      // Wifi Check:
+      const netInfo = await NetInfo.fetch();
+      check.hasWifi = netInfo.isConnected ?? false;
+
+      // Storage Check:
+      check.freeStorage = await DeviceInfo.getFreeDiskStorage();
+
+      // Ram Check:
+      check.totalRAM = await DeviceInfo.getTotalMemory();
+      check.usedRAM = await DeviceInfo.getUsedMemory();
+      check.freeRAM = check.totalRAM - check.usedRAM;
+
+      return check;
+    }
+
     private async downloadModel(progFuncs?: aiInitProgressFuncs){
+      let deviceState: deviceState = await this.getDeviceState();
+      const updateDeviceState = async () => { deviceState = await this.getDeviceState(); };
+
+      // Wifi Check:
+      if (!deviceState.hasWifi){
+        throw new Error(`No Wifi detected. We need to download the AI model, then you can go offline.`);
+      }
+
       // AI model:
+      // Check if can download
+      const aiResponse = await fetch(aiModelDownloadLink, { method: 'HEAD' });
+      const aiContentLengthStr = aiResponse.headers.get("content-length");
+
+      if (!aiContentLengthStr){
+        throw new Error(`Failed to get AI Models File Size. HTTP Error: '${aiResponse.statusText}'`)
+      }
+      const aiContentLength = parseInt(aiContentLengthStr);
+
+      if (deviceState.freeStorage < aiContentLength){
+        const neededSpace = (aiContentLength - deviceState.freeStorage) / Math.pow(10, 9);
+        const prettyNeededSpace = Math.floor(neededSpace * 1000) / 1000;
+        throw new Error(`AI Model is too big to download. An Extra ${prettyNeededSpace} GB is needed.`);
+      }
+
+      // Delete old file if download is uncomplete.
+      if (await RNFS.exists(aiModelDest)){
+        const fileInfo = await RNFS.stat(aiModelDest)
+
+        if (fileInfo.size !== aiContentLength){
+          await RNFS.unlink(aiModelDest)
+        }
+      }
+
+      // Download
+      // check user data instead of file existence
       if (!(await RNFS.exists(aiModelDest))){
         const { promise } = RNFS.downloadFile({
           fromUrl: aiModelDownloadLink,
           toFile: aiModelDest,
-          progress: progFuncs?.downloadModel
+          progress: progFuncs?.downloadModel,
         });
+
         await promise;
+
+        // Tell data it's fully downloaded
+
+
+        await updateDeviceState();
       }
 
       // Multimodal Projector:
+      // Check if can download
+      const mmprojResponse = await fetch(aiMMProjDownloadLink, { method: 'HEAD' });
+      const mmprojContentLengthStr = mmprojResponse.headers.get("content-length");
+
+      if (!mmprojContentLengthStr){
+        throw new Error(`Failed to get AI Model's Multimodal Projector File Size. HTTP Error: '${mmprojResponse.statusText}'`);
+      }
+      const mmprojContentLength = parseInt(mmprojContentLengthStr);
+
+      if (deviceState.freeStorage < mmprojContentLength){
+        const neededSpace = (mmprojContentLength - deviceState.freeStorage) / Math.pow(10, 9);
+        const prettyNeededSpace = Math.floor(neededSpace * 1000) / 1000;
+        throw new Error(`AI Model's Multimodal Projector is too big to download. An Extra ${prettyNeededSpace} GB is needed.`);
+      }
+
+      // Delete old file if download is uncomplete.
+      if (await RNFS.exists(aiMMProjDest)){
+        const fileInfo = await RNFS.stat(aiMMProjDest);
+
+        if (fileInfo.size !== mmprojContentLength){
+          await RNFS.unlink(aiMMProjDest);
+        }
+      }
+
+      // Download
+      // check user data instead of file existence
       if (!(await RNFS.exists(aiMMProjDest))){
         const { promise } = RNFS.downloadFile({
           fromUrl: aiMMProjDownloadLink,
           toFile: aiMMProjDest,
-          progress: progFuncs?.downloadMMProj
+          progress: progFuncs?.downloadMMProj,
         });
+
         await promise;
+
+        // Tell data it's fully downloaded
+        
+
+        await updateDeviceState();
       }
-    }
-
-    /** 
-     * Checks if the users device can handle 
-     * downloading, initializing, and generating 
-     * the AI Model and Multimodal Projector.
-     * 
-     * The requirement(s) are:
-     *
-     * **- The Device must have 8,589,934,590 bytes (8.589 Gigabytes) bytes of free storage.**
-     * 
-     * **- The Device must have at least 4,000,000,000 bytes (4 Gigabytes) bytes of free RAM storage.**
-     * 
-     * ^ Requirements are changable in '@/assets/appSettings.tsx'
-    */
-    async deviceFillsRequirements(): Promise<deviceRequirementCheck> {
-      const check: deviceRequirementCheck = {
-        requiredStorage: false,
-        requiredRAM: false,
-      };
-
-      // Storage Check:
-      const freeStorage = await DeviceInfo.getFreeDiskStorage();
-
-      if (freeStorage >= appSettings.device.minDeviceFreeBytesStorage){
-        check.requiredStorage = true;
-      }
-
-      // Ram Check:
-      const totalRAM = await DeviceInfo.getTotalMemory();
-      const usedRAM = await DeviceInfo.getUsedMemory();
-      const freeRAM = totalRAM - usedRAM;
-
-      if (freeRAM >= appSettings.device.minDeviceFreeBytesRAM){
-        check.requiredRAM = true;
-      }
-
-      return check;
     }
 
     async init(progFuncs?: aiInitProgressFuncs) {
@@ -137,9 +223,8 @@ class aiService{
       });
 
       if (!success){
-        throw new Error("Failed to initialize the AI model's multimodel projector.")
+        throw new Error("Failed to initialize the AI model's Multimodal Projector.")
       }
-      debugPrint("initing done!");
     }
 
     /** 
@@ -178,7 +263,7 @@ class aiService{
         const startTime = Math.floor(Date.now() / 1000);
         const response = await this.context.completion(params);
         const diffTime = Math.floor(Date.now() / 1000) - startTime;
-        console.log("Response Took: (", Math.floor(diffTime / 3600), ":", Math.floor(diffTime % 3600) / 60, ":", diffTime % 60, ")");
+        console.log("Response Took: (", Math.floor(diffTime / 3600), ":", Math.floor((diffTime % 3600) / 60), ":", diffTime % 60, ")");
 
         return response;
 

@@ -63,7 +63,6 @@ const IntroText = ({ text, duration, letterSpacing, xPosOffset, yPosOffset }: In
             style.text, 
             {
               letterSpacing: letterSpacing,
-              position: "absolute",
               transform: [{ scale: size }]
             }
           ]
