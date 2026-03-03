@@ -1,21 +1,23 @@
 import appSettings from '@/assets/appSettings';
+import NetInfo from "@react-native-community/netinfo";
 import { Asset } from 'expo-asset';
 import { File } from 'expo-file-system';
 import { CompletionParams, initLlama, LlamaContext, NativeCompletionResult } from 'llama.rn';
-import { BackHandler } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import RNFS, { DownloadProgressCallbackResult } from 'react-native-fs';
-import NetInfo from "@react-native-community/netinfo";
+import aiFileCheck from './aiFileCheck';
 
 // Things to do:
 //
 // Check Wifi ✅
 // Delete Files if the app is closed ✅
-// Save data that the user actually fully downloaded the model ❌
-// Change AI to settings file (userDataService?) ❌
+// change from wifi check to connection check ✅
+// Save data that the user actually fully downloaded the model ✅
+// Change from settings in this file to '@/assets/appSettings' ❌
 // Kick user if errors ❌
 // Loading bar (4 phases, downloading model and mmproj and initing them) (and wait 3 secs after) ❌
 // Update loading screen to support dark-mode and light-mode (including status bar) ❌
+// delete all of tis when done ^ now time to work on camera and ai ❌
 
 // Help with llama.rn:
 // https://github.com/mybigday/llama.rn/blob/main/README.md
@@ -39,7 +41,7 @@ Alert.alert("WARNING:", "Your Device does not meet the standard requirements of 
 // Download async-storage to save that the model is fully downloaded:
 // npm i @react-native-async-storage/async-storage
 
-// use this for wifi check:
+// use this for Connection check:
 // npm i @react-native-community/netinfo
 
 const aiModelName = "aiModel.gguf";
@@ -73,31 +75,33 @@ type aiInitProgressFuncs = {
 };
 
 type deviceState = {
-  hasWifi: boolean,
+  hasConnection: boolean,
   freeStorage: number,
   totalRAM: number,
   usedRAM: number,
   freeRAM: number,
 }
 
+
+// AI Service:
 class aiService{
     private context: LlamaContext | null = null;
 
     /** 
-     * Returns the phones wifi status, free storage, total RAM, used RAM, and free RAM.
+     * Returns the phones connection status, free storage, total RAM, used RAM, and free RAM.
     */
     async getDeviceState(): Promise<deviceState> {
       const check: deviceState = {
-        hasWifi: false,
+        hasConnection: false,
         freeStorage: 0,
         totalRAM: 0,
         usedRAM: 0,
         freeRAM: 0,
       };
 
-      // Wifi Check:
+      // Connection Check:
       const netInfo = await NetInfo.fetch();
-      check.hasWifi = netInfo.isConnected ?? false;
+      check.hasConnection = netInfo.isConnected ?? false;
 
       // Storage Check:
       check.freeStorage = await DeviceInfo.getFreeDiskStorage();
@@ -111,12 +115,17 @@ class aiService{
     }
 
     private async downloadModel(progFuncs?: aiInitProgressFuncs){
+      // Vars
+      const downloadedAiModel = await aiFileCheck.fullyDownloadedAiModel();
+      const downloadedMMProj = await aiFileCheck.fullyDownloadedMMProj();
+      const downloadedBothFiles = !downloadedAiModel || !downloadedMMProj;
+
       let deviceState: deviceState = await this.getDeviceState();
       const updateDeviceState = async () => { deviceState = await this.getDeviceState(); };
 
-      // Wifi Check:
-      if (!deviceState.hasWifi){
-        throw new Error(`No Wifi detected. We need to download the AI model, then you can go offline.`);
+      // Connection Check:
+      if (!downloadedBothFiles && !deviceState.hasConnection){
+        throw new Error(`No Connection detected. We need to download the AI model, then you can go offline.`);
       }
 
       // AI model:
@@ -135,18 +144,8 @@ class aiService{
         throw new Error(`AI Model is too big to download. An Extra ${prettyNeededSpace} GB is needed.`);
       }
 
-      // Delete old file if download is uncomplete.
-      if (await RNFS.exists(aiModelDest)){
-        const fileInfo = await RNFS.stat(aiModelDest)
-
-        if (fileInfo.size !== aiContentLength){
-          await RNFS.unlink(aiModelDest)
-        }
-      }
-
       // Download
-      // check user data instead of file existence
-      if (!(await RNFS.exists(aiModelDest))){
+      if (!downloadedAiModel){
         const { promise } = RNFS.downloadFile({
           fromUrl: aiModelDownloadLink,
           toFile: aiModelDest,
@@ -154,10 +153,7 @@ class aiService{
         });
 
         await promise;
-
-        // Tell data it's fully downloaded
-
-
+        await aiFileCheck.setDownloadedAiModel(true);
         await updateDeviceState();
       }
 
@@ -177,18 +173,8 @@ class aiService{
         throw new Error(`AI Model's Multimodal Projector is too big to download. An Extra ${prettyNeededSpace} GB is needed.`);
       }
 
-      // Delete old file if download is uncomplete.
-      if (await RNFS.exists(aiMMProjDest)){
-        const fileInfo = await RNFS.stat(aiMMProjDest);
-
-        if (fileInfo.size !== mmprojContentLength){
-          await RNFS.unlink(aiMMProjDest);
-        }
-      }
-
       // Download
-      // check user data instead of file existence
-      if (!(await RNFS.exists(aiMMProjDest))){
+      if (!downloadedMMProj){
         const { promise } = RNFS.downloadFile({
           fromUrl: aiMMProjDownloadLink,
           toFile: aiMMProjDest,
@@ -196,10 +182,7 @@ class aiService{
         });
 
         await promise;
-
-        // Tell data it's fully downloaded
-        
-
+        await aiFileCheck.setDownloadedMMProj(true);
         await updateDeviceState();
       }
     }

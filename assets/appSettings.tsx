@@ -10,6 +10,11 @@ export default {
         minDeviceFreeBytesRAM: 4 * Math.pow(10, 9)
     },
 
+    ai: {
+        fullyDownloadedAiModelAsyncKey: "_fullyDownloadedAiModel",
+        fullyDownloadedMMProjAsyncKey: "_fullyDownloadedMMProj",
+    },
+
     developer: {
         debugPrint: false
     }
