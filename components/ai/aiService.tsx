@@ -15,6 +15,7 @@ import aiFileCheck from './aiFileCheck';
 // Save data that the user actually fully downloaded the model ✅
 // Change from settings in this file to '@/assets/appSettings' ❌
 // Kick user if errors ❌
+// Warn user if they don't have the recommended amount of RAM ❌
 // Loading bar (4 phases, downloading model and mmproj and initing them) (and wait 3 secs after) ❌
 // Update loading screen to support dark-mode and light-mode (including status bar) ❌
 // delete all of tis when done ^ now time to work on camera and ai ❌
@@ -82,7 +83,6 @@ type deviceState = {
   freeRAM: number,
 }
 
-
 // AI Service:
 class aiService{
     private context: LlamaContext | null = null;
@@ -129,23 +129,23 @@ class aiService{
       }
 
       // AI model:
-      // Check if can download
-      const aiResponse = await fetch(aiModelDownloadLink, { method: 'HEAD' });
-      const aiContentLengthStr = aiResponse.headers.get("content-length");
-
-      if (!aiContentLengthStr){
-        throw new Error(`Failed to get AI Models File Size. HTTP Error: '${aiResponse.statusText}'`)
-      }
-      const aiContentLength = parseInt(aiContentLengthStr);
-
-      if (deviceState.freeStorage < aiContentLength){
-        const neededSpace = (aiContentLength - deviceState.freeStorage) / Math.pow(10, 9);
-        const prettyNeededSpace = Math.floor(neededSpace * 1000) / 1000;
-        throw new Error(`AI Model is too big to download. An Extra ${prettyNeededSpace} GB is needed.`);
-      }
-
-      // Download
       if (!downloadedAiModel){
+        // Check if can download:
+        const aiResponse = await fetch(aiModelDownloadLink, { method: 'HEAD' });
+        const aiContentLengthStr = aiResponse.headers.get("content-length");
+
+        if (!aiContentLengthStr){
+          throw new Error(`Failed to get AI Models File Size. HTTP Error: '${aiResponse.statusText}'`);
+        }
+        const aiContentLength = parseInt(aiContentLengthStr);
+
+        if (deviceState.freeStorage < aiContentLength){
+          const neededSpace = (aiContentLength - deviceState.freeStorage) / Math.pow(10, 9);
+          const prettyNeededSpace = Math.floor(neededSpace * 1000) / 1000;
+          throw new Error(`AI Model is too big to download. An Extra ${prettyNeededSpace} GB is needed.`);
+        }
+
+        // Download:
         const { promise } = RNFS.downloadFile({
           fromUrl: aiModelDownloadLink,
           toFile: aiModelDest,
@@ -158,23 +158,23 @@ class aiService{
       }
 
       // Multimodal Projector:
-      // Check if can download
-      const mmprojResponse = await fetch(aiMMProjDownloadLink, { method: 'HEAD' });
-      const mmprojContentLengthStr = mmprojResponse.headers.get("content-length");
-
-      if (!mmprojContentLengthStr){
-        throw new Error(`Failed to get AI Model's Multimodal Projector File Size. HTTP Error: '${mmprojResponse.statusText}'`);
-      }
-      const mmprojContentLength = parseInt(mmprojContentLengthStr);
-
-      if (deviceState.freeStorage < mmprojContentLength){
-        const neededSpace = (mmprojContentLength - deviceState.freeStorage) / Math.pow(10, 9);
-        const prettyNeededSpace = Math.floor(neededSpace * 1000) / 1000;
-        throw new Error(`AI Model's Multimodal Projector is too big to download. An Extra ${prettyNeededSpace} GB is needed.`);
-      }
-
-      // Download
       if (!downloadedMMProj){
+        // Check if can download:
+        const mmprojResponse = await fetch(aiMMProjDownloadLink, { method: 'HEAD' });
+        const mmprojContentLengthStr = mmprojResponse.headers.get("content-length");
+
+        if (!mmprojContentLengthStr){
+          throw new Error(`Failed to get AI Model's Multimodal Projector File Size. HTTP Error: '${mmprojResponse.statusText}'`);
+        }
+        const mmprojContentLength = parseInt(mmprojContentLengthStr);
+
+        if (deviceState.freeStorage < mmprojContentLength){
+          const neededSpace = (mmprojContentLength - deviceState.freeStorage) / Math.pow(10, 9);
+          const prettyNeededSpace = Math.floor(neededSpace * 1000) / 1000;
+          throw new Error(`AI Model's Multimodal Projector is too big to download. An Extra ${prettyNeededSpace} GB is needed.`);
+        }
+
+        // Download:
         const { promise } = RNFS.downloadFile({
           fromUrl: aiMMProjDownloadLink,
           toFile: aiMMProjDest,
