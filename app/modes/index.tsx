@@ -8,24 +8,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 // finish loading screen
 
-// put this apart of text comp
-const math = `
-  If you're solving a math related problem,
-  Always solve the problems using the following structure:
-
-  1. Restate the problem in one sentence.
-  2. List the known values.
-  3. Write the correct formula.
-  4. Substitute the values into the formula.
-  5. Compute step by step.
-  6. Give the final answer clearly.
-
-  Do not repeat lines.  
-  Do not restate formulas more than once.  
-  Do not invent new variables.  
-  Do not explain concepts unless asked.  
-  Keep the solution concise and structured.
-`
 
 const test = async (msg: string) => {
   await aiService.init({
@@ -38,9 +20,6 @@ const test = async (msg: string) => {
     initModel: alpha => {
       console.log("initing AI Model:", alpha)
     },
-    onMMProjInited: () => {
-      console.log("MMProj inited!")
-    }
   });
 
   const response = await aiService.imageCompletion({
@@ -60,10 +39,6 @@ const test = async (msg: string) => {
         role: "system",
         content: "Your job is to solve the problem from the given image."
       },
-      {
-        role: "system",
-        content: math,
-      }
     ]
   })
 

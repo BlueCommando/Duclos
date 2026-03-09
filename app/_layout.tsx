@@ -19,7 +19,7 @@ export default function RootLayout() {
   }, []);
 
   return (<>
-    <StatusBar barStyle="dark-content"/>,
+    <StatusBar barStyle="dark-content"/>
 
     <ThemeProvider>
       <Stack screenOptions={{headerShown: false}}>

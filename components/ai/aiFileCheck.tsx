@@ -6,9 +6,6 @@ class downloadCheckService{
 
   /** 
    * Sets the value of the user's AI model files state. 
-   * 
-   * Returns **false** if **null**.
-   * 
    * **(BOOLEAN TYPE)**
   */
   async setDownloadedAiModel(state: boolean){
@@ -16,7 +13,6 @@ class downloadCheckService{
 
       const jsonValue = JSON.stringify(state);
       await AsyncStorage.setItem(appSettings.ai.fullyDownloadedAiModelAsyncKey, jsonValue);
-      console.log(`saved in 'setDownloadedAiModel': '${state}'`);
 
     } catch(e){
 
@@ -38,7 +34,6 @@ class downloadCheckService{
         return false;
       }
 
-      console.log(`retrived from 'setDownloadedAiModel': '${state}'`);
       return JSON.parse(state);
 
     } catch(e){
@@ -53,9 +48,6 @@ class downloadCheckService{
   
   /** 
    * Sets the value of the user's AI model's Multimodal Projector files state.
-   *  
-   * Returns **false** if **null**.
-   * 
    * **(BOOLEAN TYPE)**
   */
   async setDownloadedMMProj(state: boolean){
@@ -63,7 +55,6 @@ class downloadCheckService{
 
       const jsonValue = JSON.stringify(state);
       await AsyncStorage.setItem(appSettings.ai.fullyDownloadedMMProjAsyncKey, jsonValue);
-      console.log(`saved in 'setDownloadedAiModel': '${state}'`);
 
     } catch(e){
 
@@ -85,13 +76,28 @@ class downloadCheckService{
         return false;
       }
 
-      console.log(`retrived from 'setDownloadedAiModel': '${state}'`);
       return JSON.parse(state);
 
     } catch(e){
 
       console.log("fullyDownloadedAiModel Error:", e);
       return false;
+
+    }
+  }
+
+  /** 
+   * Marks all downloaded AI files as deleted.
+  */
+  async markAllFilesDeleted(){
+    try{
+
+      this.setDownloadedAiModel(false);
+      this.setDownloadedMMProj(false);
+
+    } catch(e) {
+
+      console.log("fullyDownloadedAiModel Error:", e)
 
     }
   }

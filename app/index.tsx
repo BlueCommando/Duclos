@@ -1,26 +1,45 @@
 import aiService from '@/components/ai/aiService';
 import IntroText from '@/components/loadingScreen/IntroText';
+import LoadingBar from '@/components/loadingScreen/LoadingBar';
 import LogoBox from '@/components/loadingScreen/LogoBox';
 import { router } from 'expo-router';
 import { useEffect } from 'react';
+import { Alert, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   useEffect(() => {
     const initAI = async () => {
-      //await aiService.deviceFillsRequirements()
+      
+      try{
 
-      await aiService.init({
-        downloadModel: res => {
-          console.log("AI Model Download:", res.bytesWritten / res.contentLength)
-        },
-        downloadMMProj: res => {
-          console.log("MMProj Download:", res.bytesWritten / res.contentLength)
-        },
-        initModel: alpha => {
-          console.log("initing AI Model:", alpha)
-        },
-      });
+        await aiService.init({
+
+          downloadModel: res => {
+            console.log("AI Model Download:", res.bytesWritten / res.contentLength)
+          },
+
+          downloadMMProj: res => {
+            console.log("MMProj Download:", res.bytesWritten / res.contentLength)
+          },
+
+          initModel: alpha => {
+            console.log("initing AI Model:", alpha)
+          },
+
+        });
+
+      } catch(e) {
+        
+        Alert.alert(
+          "CRITICAL ERROR OCCURED:", 
+          String(e), 
+          [{ text: "OK", onPress: () => BackHandler.exitApp() }],
+          { cancelable: false, }
+        );
+
+        return true;
+      }
 
       // Change to main thing
       router.replace("./modes");
@@ -59,6 +78,10 @@ export default function HomeScreen() {
         letterSpacing={10}
         yPosOffset={75}
         duration={1000}
+      />
+
+      <LoadingBar
+        
       />
     </SafeAreaView>
   )
