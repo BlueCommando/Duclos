@@ -2,13 +2,13 @@
 
 export default {
     device: {
-        //Ram needed to generate a message and 4 gigabytes seems to be the bare-minimum.
+        // Ram needed to generate a message and 4 gigabytes seems to be the bare-minimum.
         minDeviceFreeBytesRAM: 4 * Math.pow(10, 9)
     },
 
     ai: {
-        text_n_perdict: 255,
-        imagery_n_predict: 255,
+        text_n_perdict: 1024,
+        imagery_n_predict: 1024,
 
         universalCompletionMessage: [
             {
@@ -47,10 +47,7 @@ Keep the solution concise and structured.
         imageCompletionMessage: [
             {
                 role: "system",
-                content: `
-You have vision capabilities. 
-You can analyze and describe images when provided.
-                `,
+                content: `You have vision capabilities. You can analyze and describe images when provided.`,
             },
         ],
 

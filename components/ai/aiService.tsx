@@ -17,8 +17,9 @@ import aiFileCheck from './aiFileCheck';
 // Change from settings in this file to '@/assets/appSettings' ✅
 // Kick user if errors ✅
 // Warn user if they don't have the recommended amount of RAM ✅
-// Loading bar (4 phases, downloading model and mmproj and initing them) (and wait 3 secs after) ❌
+// Loading bar (4 phases, downloading model and mmproj and initing them) (and wait 3 secs after) ✅
 // Update loading screen to support dark-mode and light-mode (including status bar) ❌
+// Increase tokens for ai ❌
 // Bug where ai takes 45 minutes?? ❌
 // delete all of tis when done ^ now time to work on camera and ai ❌
 
@@ -51,6 +52,8 @@ type aiInitProgressFuncs = {
   downloadModel?: (res: DownloadProgressCallbackResult) => void,
   downloadMMProj?: (res: DownloadProgressCallbackResult) => void,
   initModel?: (percentage: number) => void,
+  onNewTask?: (taskName: string) => void,
+  onTaskEnded?: () => void,
 };
 
 type deviceState = {
@@ -116,6 +119,24 @@ class aiService{
       return check;
     }
 
+    /** 
+     * Fires the 'onTaskEnded' progress function, if it exists.
+    */
+    private onTaskEnded = (progFuncs?: aiInitProgressFuncs) => {
+      if (progFuncs?.onTaskEnded !== undefined){
+        progFuncs.onTaskEnded();
+      }
+    }
+
+    /** 
+     * Fires the 'onNewTask' progress function, if it exists.
+    */
+    private onNewTask = (progFuncs?: aiInitProgressFuncs, taskName?: string) => {
+      if (progFuncs?.onNewTask !== undefined){
+        progFuncs.onNewTask(taskName || "");
+      }
+    }
+
     private async downloadModel(progFuncs?: aiInitProgressFuncs){
       // Vars:
       const downloadedAiModel = await aiFileCheck.fullyDownloadedAiModel();
@@ -131,6 +152,8 @@ class aiService{
       }
 
       // AI model:
+      this.onNewTask(progFuncs, "Downloading AI Model");
+
       if (!downloadedAiModel){
 
         // Check if can download:
@@ -160,8 +183,12 @@ class aiService{
         await aiFileCheck.setDownloadedAiModel(true);
         await updateDeviceState();
       }
+      
+      this.onTaskEnded(progFuncs);
 
       // Multimodal Projector:
+      this.onNewTask(progFuncs, "Downloading AI Model's\nMulitimodal Projector");
+
       if (!downloadedMMProj){
 
         // Check if can download:
@@ -191,6 +218,8 @@ class aiService{
         await aiFileCheck.setDownloadedMMProj(true);
         await updateDeviceState();
       }
+
+      this.onTaskEnded(progFuncs);
     }
 
     async init(progFuncs?: aiInitProgressFuncs) {
@@ -207,6 +236,8 @@ class aiService{
       }
 
       // AI:
+      this.onNewTask(progFuncs, "Initializating AI Model");
+
       this.context = await initLlama({
         model: aiModelDest,
         use_mlock: true,
@@ -214,6 +245,11 @@ class aiService{
         n_gpu_layers: 20, // > 0: enable Metal on iOS,
         ctx_shift: true,
       }, progFuncs?.initModel );
+
+      this.onTaskEnded(progFuncs);
+
+      // MMProj:
+      this.onNewTask(progFuncs, "Initializating AI Model's\nMultimodal Projector");
 
       const success = await this.context.initMultimodal({
         path: aiMMProjDest,
@@ -223,6 +259,8 @@ class aiService{
       if (!success){
         throw new Error("Failed to initialize the AI model's Multimodal Projector.")
       }
+
+      this.onTaskEnded(progFuncs);
     }
 
     /** 

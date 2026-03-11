@@ -3,28 +3,33 @@ import IntroText from '@/components/loadingScreen/IntroText';
 import LoadingBar from '@/components/loadingScreen/LoadingBar';
 import LogoBox from '@/components/loadingScreen/LogoBox';
 import { router } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
+  const [phase, changePhase] = useState(0);
+  const [percentage, changePercentage] = useState(0);
+  const [phaseDesc, changePhaseDesc] = useState("");
+  const [isBarVisible, changeBarVisiblity] = useState(false);
+
   useEffect(() => {
     const initAI = async () => {
-      
       try{
 
         await aiService.init({
 
-          downloadModel: res => {
-            console.log("AI Model Download:", res.bytesWritten / res.contentLength)
-          },
+          downloadModel: res => changePercentage(res.bytesWritten / res.contentLength),
 
-          downloadMMProj: res => {
-            console.log("MMProj Download:", res.bytesWritten / res.contentLength)
-          },
+          downloadMMProj: res => changePercentage(res.bytesWritten / res.contentLength),
 
-          initModel: alpha => {
-            console.log("initing AI Model:", alpha)
+          initModel: alpha => changePercentage(alpha / 100),
+
+          onNewTask: taskName => changePhaseDesc(taskName),
+
+          onTaskEnded: () => {
+            changePercentage(0)
+            changePhase(phase => phase + 1)
           },
 
         });
@@ -42,10 +47,13 @@ export default function HomeScreen() {
       }
 
       // Change to main thing
-      router.replace("./modes");
+      setTimeout(() => router.replace("./modes"), 3000);
     }
 
-    initAI();
+    setTimeout(() => {
+      changeBarVisiblity(true);
+      initAI();
+    }, 2000)
   }, []);
 
   return (
@@ -80,9 +88,14 @@ export default function HomeScreen() {
         duration={1000}
       />
 
-      <LoadingBar
-        
-      />
+      {isBarVisible && (
+        <LoadingBar
+          curPhase={phase}
+          maxPhase={4}
+          percentage={percentage}
+          description={phaseDesc}
+        />
+      )}
     </SafeAreaView>
   )
 }
