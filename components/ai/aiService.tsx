@@ -242,8 +242,8 @@ class aiService{
         model: aiModelDest,
         use_mlock: true,
         n_ctx: 4096,
-        n_gpu_layers: 20, // > 0: enable Metal on iOS,
-        ctx_shift: true,
+        n_gpu_layers: 99, // > 0: enable Metal on iOS,
+        ctx_shift: false,
       }, progFuncs?.initModel );
 
       this.onTaskEnded(progFuncs);
@@ -271,8 +271,8 @@ class aiService{
     async textCompletion(params: CompletionParams): Promise<NativeCompletionResult> {
       params.stop = appSettings.ai.stopWords;
       params.n_predict = appSettings.ai.text_n_perdict;
-      params.messages?.concat(appSettings.ai.universalCompletionMessage);
-      params.messages?.concat(appSettings.ai.textCompletionMessage);
+      params.messages = params.messages?.concat(appSettings.ai.universalCompletionMessage);
+      params.messages = params.messages?.concat(appSettings.ai.textCompletionMessage);
       return this.rawCompletion(params)
     }
 
@@ -284,8 +284,9 @@ class aiService{
     async imageCompletion(params: CompletionParams): Promise<NativeCompletionResult> {
       params.stop = appSettings.ai.stopWords;
       params.n_predict = appSettings.ai.imagery_n_predict;
-      params.messages?.concat(appSettings.ai.universalCompletionMessage);
-      params.messages?.concat(appSettings.ai.imageCompletionMessage);
+      params.messages = params.messages?.concat(appSettings.ai.universalCompletionMessage);
+      params.messages = params.messages?.concat(appSettings.ai.imageCompletionMessage);
+      console.log(params.messages)
       return this.rawCompletion(params)
     }
 

@@ -7,8 +7,8 @@ export default {
     },
 
     ai: {
-        text_n_perdict: 1024,
-        imagery_n_predict: 1024,
+        text_n_perdict: 256,
+        imagery_n_predict: 256,
 
         universalCompletionMessage: [
             {
