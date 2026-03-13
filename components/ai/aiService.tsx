@@ -32,14 +32,6 @@ import aiFileCheck from './aiFileCheck';
 // Used Model Link:
 // https://huggingface.co/unsloth/Qwen2.5-VL-7B-Instruct-GGUF
 
-/*Shutdown app with alert:
-
-Alert.alert("WARNING:", "Your Device does not meet the standard requirements of something", [
-  { text: "Cancel", onPress: () => console.log("Cancel Pressed") },
-  { text: "OK", onPress: () => BackHandler.exitApp() }
-])
-*/
-
 const aiModelName = "aiModel.gguf";
 const aiModelDest = `${RNFS.DocumentDirectoryPath}/${aiModelName}`;
 const aiModelDownloadLink = "https://huggingface.co/unsloth/Qwen2.5-VL-7B-Instruct-GGUF/resolve/main/Qwen2.5-VL-7B-Instruct-UD-Q2_K_XL.gguf";
@@ -286,7 +278,6 @@ class aiService{
       params.n_predict = appSettings.ai.imagery_n_predict;
       params.messages = params.messages?.concat(appSettings.ai.universalCompletionMessage);
       params.messages = params.messages?.concat(appSettings.ai.imageCompletionMessage);
-      console.log(params.messages)
       return this.rawCompletion(params)
     }
 

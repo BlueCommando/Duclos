@@ -10,10 +10,10 @@ const modesLayout = () => {
     <Tabs
       screenOptions={{
         tabBarStyle: {
-          backgroundColor: colors.surface,
+          backgroundColor: colors.background,
 
           borderTopWidth: 1,
-          borderColor: colors.border,
+          borderColor: colors.background,
 
           paddingTop: 10,
           height: 100,

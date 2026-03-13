@@ -1,5 +1,7 @@
+import { createIntroTextStyle } from '@/assets/styles/loadingScreen/IntroText.style'
+import useTheme from '@/hooks/useTheme'
 import React, { useEffect, useRef, useState } from 'react'
-import { Animated, Dimensions, StyleSheet, useWindowDimensions, View } from 'react-native'
+import { Animated, Dimensions } from 'react-native'
 import { EasingFunction } from 'react-native-reanimated'
 
 // get the box images from school
@@ -13,6 +15,9 @@ type IntroTextProps = {
 }
 
 const IntroText = ({ text, duration, letterSpacing, xPosOffset, yPosOffset }: IntroTextProps) => {
+  const theme = useTheme();
+  const styles = createIntroTextStyle(theme);
+
   // Scaling
   const size = useRef( new Animated.Value(0) ).current;
 
@@ -54,13 +59,13 @@ const IntroText = ({ text, duration, letterSpacing, xPosOffset, yPosOffset }: In
       }).start()
     }
   }, [position, textSize]);
-
+  
   return (
     <Animated.View style={[position.getLayout()]}>
       <Animated.Text 
         style={
           [
-            style.text, 
+            styles.text, 
             {
               letterSpacing: letterSpacing,
               transform: [{ scale: size }]
@@ -77,20 +82,6 @@ const IntroText = ({ text, duration, letterSpacing, xPosOffset, yPosOffset }: In
     </Animated.View>
   )
 }
-
-const style = StyleSheet.create({
-    view: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-
-    text: {
-      fontSize: 40,
-      textAlign: 'center',
-      fontFamily: 'Michroma',
-    }
-})
 
 // From: https://easings.net/#easeInCubic
 const easeInCubic: EasingFunction = (value) => {
