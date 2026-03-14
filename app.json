@@ -19,7 +19,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.Duclos"
     },
     "web": {
       "output": "static",
@@ -38,7 +39,19 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      "expo-build-properties"
+      /*
+      [
+        "llama.rn",
+        {
+          "enableEntitlements": true,
+          "entitlementsProfile": "production",
+          "forceCxx20": true,
+          "enableOpenCL": true
+        }
       ]
+      */
     ],
     "experiments": {
       "typedRoutes": true,
