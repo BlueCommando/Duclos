@@ -18,13 +18,11 @@ export default function RootLayout() {
     loadFonts();
   }, []);
 
-  return (<>
-    <StatusBar barStyle="dark-content"/>
-
-    <ThemeProvider>
-      <Stack screenOptions={{headerShown: false}}>
-        <Stack.Screen name = "modes"/>
-      </Stack>
-    </ThemeProvider>
-  </>)
+  return (
+      <ThemeProvider>
+        <Stack screenOptions={{headerShown: false}}>
+          <Stack.Screen name = "modes"/>
+        </Stack>
+      </ThemeProvider>
+    )
 }

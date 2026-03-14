@@ -8,21 +8,6 @@ import DeviceInfo from 'react-native-device-info';
 import RNFS, { DownloadProgressCallbackResult } from 'react-native-fs';
 import aiFileCheck from './aiFileCheck';
 
-// Things to do:
-//
-// Check Wifi ✅
-// Delete Files if the app is closed ✅
-// change from wifi check to connection check ✅
-// Save data that the user actually fully downloaded the model ✅
-// Change from settings in this file to '@/assets/appSettings' ✅
-// Kick user if errors ✅
-// Warn user if they don't have the recommended amount of RAM ✅
-// Loading bar (4 phases, downloading model and mmproj and initing them) (and wait 3 secs after) ✅
-// Update loading screen to support dark-mode and light-mode (including status bar) ❌
-// Increase tokens for ai ❌
-// Bug where ai takes 45 minutes?? ❌
-// delete all of tis when done ^ now time to work on camera and ai ❌
-
 // Help with llama.rn:
 // https://github.com/mybigday/llama.rn/blob/main/README.md
 //
@@ -291,13 +276,7 @@ class aiService{
           throw new Error("AI context is undefined.");
         }
 
-        console.log("generating message...");
-        const startTime = Math.floor(Date.now() / 1000);
-        const response = await this.context.completion(params);
-        const diffTime = Math.floor(Date.now() / 1000) - startTime;
-        console.log("Response Took: (", Math.floor(diffTime / 3600), ":", Math.floor((diffTime % 3600) / 60), ":", diffTime % 60, ")");
-
-        return response;
+        return await this.context.completion(params);
 
       } catch(errorMsg) {
 
@@ -325,34 +304,5 @@ class aiService{
       try{ await this.context?.release(); } catch{}
     }
 };
-
-// Message example:
-
-/*
-const result = await context.completion({
-  messages: [
-    {
-      role: 'user',
-      content: [
-        {
-          type: 'text',
-          text: 'What do you see in this image?',
-        },
-        {
-          type: 'image_url',
-          image_url: {
-            url: 'file:///path/to/image.jpg',
-            // or base64: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD...'
-          },
-        },
-      ],
-    },
-  ],
-  n_predict: 100,
-  temperature: 0.1,
-})
-
-debugPrint('AI Response:', result.text)
-*/
 
 export default new aiService

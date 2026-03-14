@@ -3,6 +3,8 @@ import { Tabs } from 'expo-router'
 import React from 'react'
 import { Image, Text } from 'react-native'
 
+const placeholderImagePath = "@/assets/app/PLACEHOLDER.png"
+
 const modesLayout = () => {
   const colors = useTheme()
 
@@ -12,8 +14,8 @@ const modesLayout = () => {
         tabBarStyle: {
           backgroundColor: colors.background,
 
-          borderTopWidth: 1,
-          borderColor: colors.background,
+          borderTopWidth: 2,
+          borderColor: colors.border,
 
           paddingTop: 10,
           height: 100,
@@ -30,7 +32,7 @@ const modesLayout = () => {
           title: "Chat",
           tabBarIcon: ({size}) => (
             <Image
-              source={require("../assets/images/wally.png")}
+              source={require(placeholderImagePath)}
               style={{ width: size, height: size }}
             />
           )
@@ -44,7 +46,7 @@ const modesLayout = () => {
           title: "Imagery",
           tabBarIcon: ({size}) => (
             <Image
-              source={require("../assets/images/wally.png")}
+              source={require(placeholderImagePath)}
               style={{ width: size, height: size }}
             />
           )
@@ -65,7 +67,7 @@ const modesLayout = () => {
           
           tabBarIcon: ({size}) => (
             <Image
-              source={require("../assets/images/wally.png")}
+              source={require(placeholderImagePath)}
               style={{ width: size, height: size }}
             />
           )
@@ -79,7 +81,7 @@ const modesLayout = () => {
           title: "Settings",
           tabBarIcon: ({size}) => (
             <Image
-              source={require("../assets/images/wally.png")}
+              source={require(placeholderImagePath)}
               style={{ width: size, height: size }}
             />
           )

@@ -27,7 +27,7 @@ const test = async (msg: string) => {
           {
             type: "image_url",
             image_url: {
-              url: await aiService.imageToBase64(require("../assets/images/q2.png")),
+              url: await aiService.imageToBase64(require("@/assets/app/questions/q2.png")),
             },
           }
         ],
@@ -64,10 +64,11 @@ export default function Index() {
           placeholder='test'
           style={{fontSize: 20}}
         />
+      
       <Image
-        source={require("../assets/images/q2.png")}
+        source={require("@/assets/app/questions/q2.png")}
         
-        style={{ width: 350, height: 150 }}
+        style={{ width: 400, height: 200 }}
       />
     </SafeAreaView>
   );
