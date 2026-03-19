@@ -5,6 +5,7 @@ import { useColorScheme } from 'react-native';
 
 export interface ColorScheme {
   background: string,
+  subBackground: string,
   border: string,
 
   textColor: string,
@@ -23,6 +24,7 @@ export interface ColorScheme {
 // @ts-ignore
 const lightColors: ColorScheme = {
   background: "#eeeeee",
+  subBackground: "#d3d3d3",
   border: "#D7D7D7",
   
   textColor: "#050505",
@@ -38,14 +40,15 @@ const lightColors: ColorScheme = {
 // Same reason as light color
 // @ts-ignore
 const darkColors: ColorScheme = {
-  background: "#0b111f",
-  border: "#000000",
+  background: "#1e2433",
+  subBackground: "#12161f",
+  border: "#10141d",
 
   textColor: "#eeeeee",
   textShadowColor: "#1d1d1d",
 
   gradients: {
-    background: ["#09101a", "#1e293b"],
+    background: ["#12161f", "#1e2433"],
   },
 
   statusBarStyle: "light-content" as const,
