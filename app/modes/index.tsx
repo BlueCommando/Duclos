@@ -19,15 +19,21 @@ const test = async (msg: string) => {
     },
   });
 
-  const response = await aiService.imageCompletion({
+  const response = await aiService.textCompletion({
     messages: [
+      {
+        role: "user",
+        content: msg,
+      }
+
+      /*
       {
         role: "user",
         content: [
           {
             type: "image_url",
             image_url: {
-              url: await aiService.imageToBase64(require("@/assets/app/questions/q2.png")),
+              url: pathToQuestion,
             },
           }
         ],
@@ -36,6 +42,7 @@ const test = async (msg: string) => {
         role: "system",
         content: "Your job is to solve the problem from the given image."
       },
+      */
     ]
   })
 

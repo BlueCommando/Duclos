@@ -219,7 +219,7 @@ class aiService{
         model: aiModelDest,
         use_mlock: true,
         n_ctx: 4096,
-        n_gpu_layers: 99, // > 0: enable Metal on iOS,
+        n_gpu_layers: 99,
         ctx_shift: false,
       }, progFuncs?.initModel );
 

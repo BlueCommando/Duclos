@@ -2,8 +2,8 @@
 
 export default {
     device: {
-        // Ram needed to generate a message and 4 gigabytes seems to be the bare-minimum.
-        minDeviceFreeBytesRAM: 4 * Math.pow(10, 9)
+        // Ram needed to generate a message and 6 gigabytes seems to be the bare-minimum.
+        minDeviceFreeBytesRAM: 6 * Math.pow(10, 9)
     },
 
     ai: {
@@ -18,7 +18,6 @@ export default {
             {
                 role: "system",
                 content: `
-If you're solving a math related problem,
 Always solve the problems using the following structure:
 
 1. Restate the problem in one sentence.
@@ -26,13 +25,15 @@ Always solve the problems using the following structure:
 3. Write the correct formula.
 4. Substitute the values into the formula.
 5. Compute step by step.
-6. Give the final answer clearly.
+6. Give the final answer clearly on its own line.
 
-Do not repeat lines.  
-Do not restate formulas more than once.  
-Do not invent new variables.  
-Do not explain concepts unless asked.  
-Keep the solution concise and structured.
+Rules:
+- Do NOT skip steps.
+- Do NOT guess.
+- Do NOT change the problem.
+- Do NOT invent new variables.
+- Do NOT explain concepts unless asked.
+- Keep the solution concise and structured.
                 `
             },
         ],
