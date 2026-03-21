@@ -3,13 +3,13 @@ import React, { Ref } from 'react';
 import { Alert, Linking, StyleSheet } from 'react-native';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 
-type CameraView = {
+type CameraViewProps = {
   camera: Ref<Camera> | null
 }
 
 let state = 0;
 
-const cameraView = ({ camera }: CameraView) => {
+const cameraView = ({ camera }: CameraViewProps) => {
   const { hasPermission, requestPermission } = useCameraPermission()
 
   const device = useCameraDevice('back')
