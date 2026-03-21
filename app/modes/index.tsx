@@ -1,4 +1,4 @@
-import aiService from '@/components/ai/aiService';
+import AiService from '@/components/ai/AiService';
 import { useState } from 'react';
 import { Image, Text, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -7,7 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 
 const test = async (msg: string) => {
-  await aiService.init({
+  await AiService.init({
     downloadModel: res => {
       console.log("AI Model Download:", res.bytesWritten / res.contentLength)
     },
@@ -19,7 +19,7 @@ const test = async (msg: string) => {
     },
   });
 
-  const response = await aiService.textCompletion({
+  const response = await AiService.textCompletion({
     messages: [
       {
         role: "user",

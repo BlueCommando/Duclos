@@ -45,6 +45,7 @@ const cameraView = ({ camera }: CameraView) => {
           style={StyleSheet.absoluteFill}
           ref={camera} 
           device={device}
+          photo={true}
           isActive={true}
           key={state}
         />

@@ -6,7 +6,7 @@ import { CompletionParams, initLlama, LlamaContext, NativeCompletionResult } fro
 import { Alert, BackHandler } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import RNFS, { DownloadProgressCallbackResult } from 'react-native-fs';
-import aiFileCheck from './aiFileCheck';
+import AiFileCheck from './AiFileCheck';
 
 // Help with llama.rn:
 // https://github.com/mybigday/llama.rn/blob/main/README.md
@@ -42,7 +42,7 @@ type deviceState = {
 }
 
 // AI Service:
-class aiService{
+class AiService{
     private context: LlamaContext | null = null;
 
     /** 
@@ -116,8 +116,8 @@ class aiService{
 
     private async downloadModel(progFuncs?: aiInitProgressFuncs){
       // Vars:
-      const downloadedAiModel = await aiFileCheck.fullyDownloadedAiModel();
-      const downloadedMMProj = await aiFileCheck.fullyDownloadedMMProj();
+      const downloadedAiModel = await AiFileCheck.fullyDownloadedAiModel();
+      const downloadedMMProj = await AiFileCheck.fullyDownloadedMMProj();
       const downloadedAllFiles = !downloadedAiModel || !downloadedMMProj;
 
       let deviceState: deviceState = await this.getDeviceState();
@@ -157,7 +157,7 @@ class aiService{
         });
 
         await promise;
-        await aiFileCheck.setDownloadedAiModel(true);
+        await AiFileCheck.setDownloadedAiModel(true);
         await updateDeviceState();
       }
       
@@ -192,7 +192,7 @@ class aiService{
         });
 
         await promise;
-        await aiFileCheck.setDownloadedMMProj(true);
+        await AiFileCheck.setDownloadedMMProj(true);
         await updateDeviceState();
       }
 
@@ -305,4 +305,4 @@ class aiService{
     }
 };
 
-export default new aiService
+export default new AiService

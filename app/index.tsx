@@ -1,13 +1,13 @@
-import aiService from '@/components/ai/aiService';
+import AiService from '@/components/ai/AiService';
 import IntroText from '@/components/loadingScreen/IntroText';
 import LoadingBar from '@/components/loadingScreen/LoadingBar';
 import LogoBox from '@/components/loadingScreen/LogoBox';
+import useTheme from '@/hooks/useTheme';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, BackHandler, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {LinearGradient} from 'expo-linear-gradient';
-import useTheme from '@/hooks/useTheme';
 
 export default function HomeScreen() {
   const [phase, changePhase] = useState(0);
@@ -19,7 +19,7 @@ export default function HomeScreen() {
     const initAI = async () => {
       try{
 
-        await aiService.init({
+        await AiService.init({
 
           downloadModel: res => changePercentage(res.bytesWritten / res.contentLength),
 
