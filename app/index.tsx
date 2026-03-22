@@ -49,7 +49,7 @@ export default function HomeScreen() {
       }
 
       // Change to main thing
-      setTimeout(() => router.replace("./modes"), 3000);
+      setTimeout(() => router.push("./modes"), 3000);
     }
 
     setTimeout(() => {

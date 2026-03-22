@@ -3,12 +3,13 @@ import React from 'react'
 import { LinearGradient } from 'expo-linear-gradient'
 import useTheme, { ColorScheme } from '@/hooks/useTheme';
 import SinglePhotoOption from './SinglePhotoOption';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type PhotoOptionsProps = {
     header?: string,
     text?: string,
-    onPressBack?: () => {},
-    onPressForward?: () => {},
+    onPressBack?: () => void,
+    onPressForward?: () => void,
     children: React.ReactElement,
 }
 
@@ -20,7 +21,7 @@ const PhotoOptions = ({header, text, onPressBack, onPressForward, children}: Pho
 
   // buttons to go back and fourth
   return (
-    <>
+    <> 
         <LinearGradient style={style.background} colors={theme.gradients.background}>
 
             <View style={style.childrenContainer}>{children}</View>
@@ -31,8 +32,8 @@ const PhotoOptions = ({header, text, onPressBack, onPressForward, children}: Pho
         </LinearGradient>
 
         <View style={style.bottomBar}>
-            <SinglePhotoOption/>
-            <SinglePhotoOption/>
+            <SinglePhotoOption onPress={onPressBack}/>
+            <SinglePhotoOption onPress={onPressForward}/>
         </View>
     </>
   )
@@ -47,8 +48,11 @@ const createPhotoOptionStyle = (color: ColorScheme) => {
         },
 
         childrenContainer: {
-            backgroundColor: color.background,
-            marginBottom: 100, 
+            flex: 1,
+            width: "80%",
+            backgroundColor: color.opposite.background,
+            marginTop: 10,
+            marginBottom: 25, 
         },
 
         bottomBar: {
