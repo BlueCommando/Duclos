@@ -1,35 +1,32 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
-import React from 'react'
-import { LinearGradient } from 'expo-linear-gradient'
 import useTheme, { ColorScheme } from '@/hooks/useTheme';
-import SinglePhotoOption from './SinglePhotoOption';
+import { LinearGradient } from 'expo-linear-gradient';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SinglePhotoOption from './SinglePhotoOption';
 
 type PhotoOptionsProps = {
     header?: string,
     text?: string,
     onPressBack?: () => void,
     onPressForward?: () => void,
-    children: React.ReactElement,
+    children: React.ReactNode,
 }
-
-// Main
 
 const PhotoOptions = ({header, text, onPressBack, onPressForward, children}: PhotoOptionsProps) => {
   const theme = useTheme();
   const style = createPhotoOptionStyle(theme);
 
-  // buttons to go back and fourth
   return (
     <> 
-        <LinearGradient style={style.background} colors={theme.gradients.background}>
+        <LinearGradient colors={theme.gradients.background}/>
 
+        <SafeAreaView style={style.mainContainer}>
             <View style={style.childrenContainer}>{children}</View>
 
             { (header !== undefined) && <Text>{header}</Text> }
             { (text !== undefined) && <Text>{text}</Text> }
-
-        </LinearGradient>
+        </SafeAreaView>
 
         <View style={style.bottomBar}>
             <SinglePhotoOption onPress={onPressBack}/>
@@ -41,15 +38,13 @@ const PhotoOptions = ({header, text, onPressBack, onPressForward, children}: Pho
 
 const createPhotoOptionStyle = (color: ColorScheme) => {
     const style = StyleSheet.create({
-        background: {
+        mainContainer: {
             flex: 1,
-            justifyContent: "center",
             alignItems: "center",
         },
 
         childrenContainer: {
-            flex: 1,
-            width: "80%",
+            width: "100%",
             backgroundColor: color.opposite.background,
             marginTop: 10,
             marginBottom: 25, 

@@ -1,10 +1,12 @@
+import CropBox from '@/components/imagery/CropBox'
 import PhotoOptions from '@/components/imagery/PhotoOptions'
+import useTheme, { ColorScheme } from '@/hooks/useTheme'
 import { router, useLocalSearchParams } from 'expo-router'
 import React from 'react'
-import { Text, View } from 'react-native'
+import { Image, StyleSheet, View } from 'react-native'
 
 const CropScreen = () => {
-  const { picturePath } = useLocalSearchParams();
+  const { picturePath } = useLocalSearchParams<{picturePath: string}>();
 
   const goBack = () => {
     if (router.canGoBack()){
@@ -12,11 +14,14 @@ const CropScreen = () => {
     } else {
       router.replace("..")
     }
-  }
+  };
 
   const goForward = () => {
     console.log("next")
-  }
+  };
+
+  const theme = useTheme();
+  const style = createCropScreenStyle(theme);
 
   return (
     <PhotoOptions
@@ -25,12 +30,31 @@ const CropScreen = () => {
       onPressBack={goBack}
       onPressForward={goForward}
     >
-      <View>
-        <Text>image to crop</Text>
-        <View style={{width: "100%", height: "50%", backgroundColor: "#000"}}></View>
+      <View style={style.photoView}>
+        <Image source={{uri: `file://${picturePath}`}} style={style.photo}/>
+        <CropBox/>
       </View>
+      
     </PhotoOptions>
   )
-}
+};
+
+const createCropScreenStyle = (colors: ColorScheme) => {
+  const style = StyleSheet.create({
+    photoView: {
+      width: "100%", 
+      height: 600,
+    },
+
+    photo: {
+      flex: 1, 
+      height: null, 
+      width: null, 
+      resizeMode: 'contain',
+    }
+  });
+
+  return style
+};
 
 export default CropScreen
