@@ -47,8 +47,8 @@ const imagery = () => {
       <View style={style.bottomCenterView}>
         <View style={style.pictureBar}>
 
-          <View style={style.pictureButtonBorder1}>
-            <View style={style.pictureButtonBorder2}>
+          <View style={[style.pictureButtonBorder, {backgroundColor: theme.opposite.border}]}>
+            <View style={[style.pictureButtonBorder, {backgroundColor: theme.border}]}>
               <TouchableOpacity onPress={takePicture} style={style.pictureButton}/>
             </View>
           </View>

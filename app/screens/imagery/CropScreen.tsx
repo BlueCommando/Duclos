@@ -7,8 +7,11 @@ const CropScreen = () => {
   const { picturePath } = useLocalSearchParams();
 
   return (
-    <PhotoOptions>
-        <Text>sup bro</Text>
+    <PhotoOptions
+      header='Crop Photo'
+      text='Help the AI by cropping the taken photo to help focus on the problem.'
+    >
+        <Text>image to crop</Text>
     </PhotoOptions>
   )
 }

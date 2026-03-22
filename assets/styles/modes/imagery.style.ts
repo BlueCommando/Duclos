@@ -25,22 +25,11 @@ export const createImageryStyle = (colors: ColorScheme) => {
             alignItems: "center",
         },
 
-        pictureButtonBorder1: {
+        pictureButtonBorder: {
             width: 0,
             height: "90%",
             aspectRatio: 1,
             borderRadius: "50%",
-            backgroundColor: colors.opposite.background,
-            justifyContent: "center",
-            alignItems: "center",
-        },
-
-        pictureButtonBorder2: {
-            width: 0,
-            height: "90%",
-            aspectRatio: 1,
-            borderRadius: "50%",
-            backgroundColor: colors.background,
             justifyContent: "center",
             alignItems: "center",
         },
