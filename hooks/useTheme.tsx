@@ -34,7 +34,7 @@ const lightColors: ColorScheme = {
     background: ["#eeeeee", "#7e8d8f"],
   },
 
-  statusBarStyle: "dark-content" as const,
+  statusBarStyle: "light-content" as const,
 };
 
 // Same reason as light color
@@ -51,7 +51,7 @@ const darkColors: ColorScheme = {
     background: ["#12161f", "#1e2433"],
   },
 
-  statusBarStyle: "light-content" as const,
+  statusBarStyle: "dark-content" as const,
 };
 
 lightColors.opposite = darkColors;

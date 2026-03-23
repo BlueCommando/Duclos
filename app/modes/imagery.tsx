@@ -16,6 +16,7 @@ import Animated, {
 //
 // Display camera ✅
 // Get picture from user camera ✅
+// Create Crop box ❌
 // allow user to crop image ❌
 // tell user if they want to pre-input a message for the image ❌
 // try react-native-markdown-display for the ai... ❌
