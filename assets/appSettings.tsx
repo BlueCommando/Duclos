@@ -6,6 +6,16 @@ export default {
         minDeviceFreeBytesRAM: 6 * Math.pow(10, 9)
     },
 
+    text: {},
+
+    imagery: {
+        crop: {
+            cornerRadius: 50,
+        },
+    },
+
+    settings: {},
+
     ai: {
         text_n_perdict: 1024,
         imagery_n_predict: 1024,

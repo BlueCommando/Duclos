@@ -1,14 +1,60 @@
-import { View, Text, StyleProp, ViewStyle, StyleSheet } from 'react-native'
-import React from 'react'
-import Draggable from 'react-native-draggable'
+import appSettings from '@/assets/appSettings';
 import useTheme, { ColorScheme } from '@/hooks/useTheme';
+import React, { useState } from 'react';
+import { PanResponder, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 
 // Help with react-native-draggable:
 // https://github.com/tongyy/react-native-draggable/blob/master/README.md
 
-const SHUT_THE_HELL_UP = () => {}
+const cornerRadius = appSettings.imagery.crop.cornerRadius
 
 const CropBox = () => {
+  const [boxState, updateBoxState] = useState({
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+  });
+
+  const dragBox = PanResponder.create({
+    onMoveShouldSetPanResponder: () => true,
+    onPanResponderMove: (event, gesture) => {
+      const { locationX, locationY } = event.nativeEvent;
+
+      const xDiff = locationX - boxState.width;
+      const yDiff = locationY - boxState.height;
+
+      // Top left Corner
+      if (locationX < cornerRadius && locationY < cornerRadius){
+
+        console.log("top left corner");
+
+      // Bottom Left Corner
+      } else if (locationX < cornerRadius && yDiff < cornerRadius){
+
+        console.log("bottom left corner");
+
+      // Top Right Corner
+      } else if (xDiff < cornerRadius && locationY < cornerRadius){
+
+        console.log("top right corner");
+
+      // Bottom Right Corner
+      } else if (xDiff < cornerRadius && yDiff < cornerRadius){
+
+        console.log("bottom right corner");
+
+      // Drag Box
+      } else {
+        updateBoxState(prev => ({
+          ...prev,
+          mX: boxState.x + gesture.dx,
+          mY: boxState.y + gesture.dy,
+        }));
+      }
+    },
+  });
+
   let theme = useTheme();
 
   if (theme.statusBarStyle != "light-content"){
@@ -18,9 +64,20 @@ const CropBox = () => {
   const style = createCropBoxStyle(theme);
 
   return (
-    <DraggableCorner style={style.cropBox}>
-      <DraggableCorner style={style.cropTopLeftCorner} posX={-5} posY={-5}></DraggableCorner>
-    </DraggableCorner>
+    <View style={
+      [
+        style.cropBox, 
+        {
+          width: boxState.width,
+          height: boxState.height,
+          left: boxState.x, 
+          top: boxState.y,
+        },
+      ]
+      } 
+
+      {...dragBox.panHandlers}
+    />
   )
 };
 
@@ -29,8 +86,6 @@ const CropBox = () => {
 const createCropBoxStyle = (colors: ColorScheme) => {
   const style = StyleSheet.create({
     cropBox: {
-      width: 100,
-      height: 100,
       opacity: 0.75,
       borderWidth: 5,
       borderRadius: 25,
@@ -40,6 +95,8 @@ const createCropBoxStyle = (colors: ColorScheme) => {
     cropTopLeftCorner: {
       width: 50,
       height: 50,
+      right: 5,
+      bottom: 5,
       borderTopWidth: 5,
       borderLeftWidth: 5,
       borderTopLeftRadius: 25,
@@ -55,32 +112,5 @@ const createCropBoxStyle = (colors: ColorScheme) => {
 
   return style;
 }
-
-type DraggableCornerProps = {
-  posX?: number,
-  posY?: number,
-  style?: StyleProp<ViewStyle>,
-  children?: React.ReactNode,
-}
-
-const DraggableCorner = ( { posX, posY, style, children }: DraggableCornerProps ) => {
-  return (
-    <Draggable 
-        x={posX || 0} 
-        y={posY || 0}
-        touchableOpacityProps={{ activeOpacity: 1 }}
-
-        onDrag={SHUT_THE_HELL_UP}
-        onShortPressRelease={SHUT_THE_HELL_UP}
-        onDragRelease={SHUT_THE_HELL_UP}
-        onLongPress={SHUT_THE_HELL_UP}
-        onPressIn={SHUT_THE_HELL_UP}
-        onPressOut={SHUT_THE_HELL_UP}
-        onRelease={SHUT_THE_HELL_UP}
-    >
-      <View style={style}>{children}</View>
-    </Draggable>
-  )
-};
 
 export default CropBox
