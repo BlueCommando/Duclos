@@ -1,57 +1,150 @@
-import appSettings from '@/assets/appSettings';
-import useTheme, { ColorScheme } from '@/hooks/useTheme';
+import { createCropBoxStyle, cropBoxFileStyle } from '@/assets/styles/screens/imagery/CropBox.style';
+import useTheme from '@/hooks/useTheme';
 import React, { useState } from 'react';
-import { PanResponder, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
+import { LayoutRectangle, PanResponder, View } from 'react-native';
 
-// Help with react-native-draggable:
-// https://github.com/tongyy/react-native-draggable/blob/master/README.md
+const cornerRadius = cropBoxFileStyle.cornerRadius;
 
-const cornerRadius = appSettings.imagery.crop.cornerRadius
+const clamp = (num: number, min: number, max: number): number => Math.min(Math.max(num, min), max);
 
-const CropBox = () => {
-  const [boxState, updateBoxState] = useState({
+type boxState = {
+  x: number,
+  y: number,
+  rx: number,
+  ry: number,
+  px: number,
+  py: number,
+  width: number,
+  height: number,
+  tlc: boolean,
+  blc: boolean,
+  trc: boolean,
+  brc: boolean,
+}
+
+type CropBoxProps = {
+  parentLayout?: LayoutRectangle,
+}
+
+const CropBox = ({ parentLayout }: CropBoxProps) => {
+  const [boxState, updateBoxState] = useState<boxState>({
     x: 0,
     y: 0,
+    rx: 0,
+    ry: 0,
+    px: 0,
+    py: 0,
     width: 100,
     height: 100,
+    tlc: false,
+    blc: false,
+    trc: false,
+    brc: false,
   });
+
+  const updateBoxStateClamped = (update: boxState | ((prev: boxState) => boxState)) => {
+    if (!parentLayout){
+      throw new Error("Cropbox has no Parent Layout")
+    }
+
+    updateBoxState(prev => {
+      const next = typeof update === "function" ? update(prev) : update;
+
+      console.log(next.y, parentLayout.height - next.height)
+
+      return {
+        ...next,
+        width: clamp(next.width, cornerRadius * 2, parentLayout.width),
+        height: clamp(next.height, cornerRadius * 2, parentLayout.height - next.y),
+        x: clamp(next.x, 0, parentLayout.width - next.width),
+        y: clamp(next.y, 0, parentLayout.height + next.height),
+      };
+    });
+  };
 
   const dragBox = PanResponder.create({
     onMoveShouldSetPanResponder: () => true,
+    onPanResponderGrant: (event) => {
+      const { locationX, locationY, pageX, pageY, } = event.nativeEvent;
+
+      const xDiff = boxState.width - locationX;
+      const yDiff = boxState.height - locationY;
+
+      updateBoxState(prev => ({
+        ...prev,
+        rx: locationX,
+        ry: locationY,
+        px: pageX,
+        py: pageY,
+        tlc: locationX < cornerRadius && locationY < cornerRadius,
+        blc: locationX < cornerRadius && yDiff < cornerRadius,
+        trc: xDiff < cornerRadius && locationY < cornerRadius,
+        brc: xDiff < cornerRadius && yDiff < cornerRadius,
+      }));
+    },
+
     onPanResponderMove: (event, gesture) => {
-      const { locationX, locationY } = event.nativeEvent;
+      const { locationX, locationY, pageX, pageY, } = event.nativeEvent;
 
-      const xDiff = locationX - boxState.width;
-      const yDiff = locationY - boxState.height;
+      // Top left corner
+      if (boxState.tlc){
 
-      // Top left Corner
-      if (locationX < cornerRadius && locationY < cornerRadius){
-
-        console.log("top left corner");
-
-      // Bottom Left Corner
-      } else if (locationX < cornerRadius && yDiff < cornerRadius){
-
-        console.log("bottom left corner");
-
-      // Top Right Corner
-      } else if (xDiff < cornerRadius && locationY < cornerRadius){
-
-        console.log("top right corner");
-
-      // Bottom Right Corner
-      } else if (xDiff < cornerRadius && yDiff < cornerRadius){
-
-        console.log("bottom right corner");
-
-      // Drag Box
-      } else {
-        updateBoxState(prev => ({
-          ...prev,
-          mX: boxState.x + gesture.dx,
-          mY: boxState.y + gesture.dy,
+        updateBoxStateClamped(prev => ({
+            ...prev,
+            width: prev.width - gesture.dx,
+            height: prev.height - gesture.dy,
+            x: prev.x + gesture.dx,
+            y: prev.y + gesture.dy,
         }));
+      
+      // Bottom left corner
+      } else if (boxState.blc){
+
+        updateBoxStateClamped(prev => ({
+          ...prev,
+          width: prev.width - gesture.dx,
+          height: prev.height + gesture.dy,
+          x: prev.x + gesture.dx,
+        }));
+
+      // Top right corner
+      } else if (boxState.trc){
+
+        updateBoxStateClamped(prev => ({
+          ...prev,
+          width: prev.width + gesture.dx,
+          height: prev.height - gesture.dy,
+          y: prev.y + gesture.dy,
+        }));
+
+      // Bottom right corner
+      } else if (boxState.brc){
+
+        updateBoxStateClamped(prev => ({
+          ...prev,
+          width: prev.width + gesture.dx,
+          height: prev.height + gesture.dy,
+          //x: prev.x + gesture.dx,
+        }));
+      
+      // Dragging
+      } else {
+
+        updateBoxStateClamped(prev => ({
+          ...prev,
+          x: boxState.x + gesture.dx,
+          y: boxState.y + gesture.dy,
+        }));
+
       }
+
+      updateBoxState(prev => ({
+        ...prev,
+        rx: locationX,
+        ry: locationY,
+        px: pageX,
+        py: pageY,
+      }));
     },
   });
 
@@ -77,40 +170,25 @@ const CropBox = () => {
       } 
 
       {...dragBox.panHandlers}
-    />
+    >
+      <View style={style.topLeftCornerContainer} pointerEvents="none">
+        <View style={[style.cropTopLeftCorner, style.globalCorner]}/>
+      </View>
+
+      <View style={style.bottomLeftCornerContainer} pointerEvents="none">
+        <View style={[style.cropBottomLeftCorner, style.globalCorner]}/>
+      </View>
+
+      <View style={style.topRightCornerContainer} pointerEvents="none">
+        <View style={[style.cropTopRightCorner, style.globalCorner]}/>
+      </View>
+
+      <View style={style.bottomRightCornerContainer} pointerEvents="none">
+        <View style={[style.cropBottomRightCorner, style.globalCorner]}/>
+      </View>
+
+    </View>
   )
 };
-
-
-// repeat the corners for everything
-const createCropBoxStyle = (colors: ColorScheme) => {
-  const style = StyleSheet.create({
-    cropBox: {
-      opacity: 0.75,
-      borderWidth: 5,
-      borderRadius: 25,
-      borderColor: colors.border,
-    },
-
-    cropTopLeftCorner: {
-      width: 50,
-      height: 50,
-      right: 5,
-      bottom: 5,
-      borderTopWidth: 5,
-      borderLeftWidth: 5,
-      borderTopLeftRadius: 25,
-      borderColor: "#ffffff"
-    },
-
-    placeholder: {
-      width: 100,
-      height: 100,
-      backgroundColor: "#000",
-    }
-  })
-
-  return style;
-}
 
 export default CropBox

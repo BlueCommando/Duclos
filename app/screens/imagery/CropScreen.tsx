@@ -2,8 +2,8 @@ import CropBox from '@/components/imagery/CropBox'
 import PhotoOptions from '@/components/imagery/PhotoOptions'
 import useTheme, { ColorScheme } from '@/hooks/useTheme'
 import { router, useLocalSearchParams } from 'expo-router'
-import React from 'react'
-import { Image, StyleSheet, View } from 'react-native'
+import React, { useState } from 'react'
+import { Image, LayoutChangeEvent, LayoutRectangle, StyleSheet, View } from 'react-native'
 
 const CropScreen = () => {
   const { picturePath } = useLocalSearchParams<{picturePath: string}>();
@@ -20,6 +20,9 @@ const CropScreen = () => {
     console.log("next")
   };
 
+  const [layout, setLayout] = useState<LayoutRectangle>();
+  const onLayout = (event: LayoutChangeEvent) => setLayout(event.nativeEvent.layout);
+
   const theme = useTheme();
   const style = createCropScreenStyle(theme);
 
@@ -30,9 +33,9 @@ const CropScreen = () => {
       onPressBack={goBack}
       onPressForward={goForward}
     >
-      <View style={style.photoView}>
+      <View style={style.photoView} onLayout={onLayout}>
         <Image source={{uri: `file://${picturePath}`}} style={style.photo}/>
-        <CropBox/>
+        <CropBox parentLayout={layout}/>
       </View>
       
     </PhotoOptions>

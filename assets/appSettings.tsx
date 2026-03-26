@@ -8,11 +8,7 @@ export default {
 
     text: {},
 
-    imagery: {
-        crop: {
-            cornerRadius: 50,
-        },
-    },
+    imagery: {},
 
     settings: {},
 
