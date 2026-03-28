@@ -35,7 +35,7 @@ const CropScreen = () => {
     >
       <View style={style.photoView} onLayout={onLayout}>
         <Image source={{uri: `file://${picturePath}`}} style={style.photo}/>
-        <CropBox parentLayout={layout}/>
+        <CropBox width={"75%"} height={"75%"} x={"12.5%"} y={"12.5%"} parentLayout={layout}/>
       </View>
       
     </PhotoOptions>
