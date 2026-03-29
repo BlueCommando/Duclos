@@ -14,6 +14,7 @@ export const createCropBoxStyle = (colors: ColorScheme) => {
       borderWidth: 5,
       borderRadius: cropBoxFileStyle.cornerRadius / 2,
       borderColor: colors.border,
+      backgroundColor: "#00000000",
     },
 
     globalCorner: {

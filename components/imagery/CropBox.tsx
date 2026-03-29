@@ -1,7 +1,7 @@
 import { createCropBoxStyle, cropBoxFileStyle } from '@/assets/styles/screens/imagery/CropBox.style';
-import useTheme from '@/hooks/useTheme';
+import { lightColors } from '@/hooks/useTheme';
 import React, { useEffect, useState } from 'react';
-import { LayoutRectangle, PanResponder, StyleProp, View, ViewStyle } from 'react-native';
+import { findNodeHandle, LayoutRectangle, PanResponder, View } from 'react-native';
 
 const cornerRadius = cropBoxFileStyle.cornerRadius;
 
@@ -13,7 +13,9 @@ const cornerRadius = cropBoxFileStyle.cornerRadius;
 const percToNum = (n: string): number => parseFloat(n.slice(0, -1)) / 100;
 const clamp = (num: number, min: number, max: number): number => Math.min(Math.max(num, min), max);
 
-type boxState = {
+type customSetState = (update: boxState | ((prev: boxState) => boxState)) => void
+
+export type boxState = {
   x: number,
   y: number,
   rx: number,
@@ -26,17 +28,19 @@ type boxState = {
   blc: boolean,
   trc: boolean,
   brc: boolean,
+  inited: boolean,
 }
 
-type CropBoxProps = {
+export type CropBoxProps = {
   width?: number | string,
   height?: number | string,
   x?: number | string,
   y?: number | string,
   parentLayout?: LayoutRectangle,
+  onBoxStateChanged?: (event: boxState) => void,
 }
 
-const CropBox = ({ width, height, x, y, parentLayout }: CropBoxProps) => {
+const CropBox = ({ width, height, x, y, parentLayout, onBoxStateChanged }: CropBoxProps) => {
   const [boxState, updateBoxState] = useState<boxState>({
     x: 0,
     y: 0,
@@ -50,7 +54,13 @@ const CropBox = ({ width, height, x, y, parentLayout }: CropBoxProps) => {
     blc: false,
     trc: false,
     brc: false,
+    inited: false,
   });
+
+  useEffect(() => {
+    if (!boxState.inited) return;
+    onBoxStateChanged?.(boxState);
+  }, [boxState]);
 
   // Will go into action when mounted.
   useEffect(() => {
@@ -65,10 +75,11 @@ const CropBox = ({ width, height, x, y, parentLayout }: CropBoxProps) => {
       height: typeof height === "string" && percToNum(height) * h || typeof height === "number" && height || cornerRadius * 2,
       x: typeof x === "string" && percToNum(x) * w || typeof x === "number" && x || 0,
       y: typeof y === "string" && percToNum(y) * h || typeof y === "number" && y || 0,
+      inited: true,
     }));
   }, [parentLayout]);
 
-  const updateBoxStateClamped = (update: boxState | ((prev: boxState) => boxState)) => {
+  const updateBoxStateClamped: customSetState = (update) => {
     if (!parentLayout){
       throw new Error("Cropbox has no Parent Layout")
     }
@@ -124,9 +135,6 @@ const CropBox = ({ width, height, x, y, parentLayout }: CropBoxProps) => {
 
     onPanResponderMove: (event, gesture) => {
       const { locationX, locationY, pageX, pageY, } = event.nativeEvent;
-
-      const xDiff = boxState.width - locationX;
-      const yDiff = boxState.height - locationY;
 
       // Top left corner
       if (boxState.tlc){
@@ -190,13 +198,7 @@ const CropBox = ({ width, height, x, y, parentLayout }: CropBoxProps) => {
     },
   });
 
-  let theme = useTheme();
-
-  if (theme.statusBarStyle != "light-content"){
-    theme = theme.opposite;
-  }
-
-  const stylesheet = createCropBoxStyle(theme);
+  const stylesheet = createCropBoxStyle(lightColors);
 
   return (
     <View style={

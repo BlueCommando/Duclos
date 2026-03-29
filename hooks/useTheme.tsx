@@ -22,7 +22,7 @@ export interface ColorScheme {
 
 // Opposite color is applied later.
 // @ts-ignore
-const lightColors: ColorScheme = {
+export const lightColors: ColorScheme = {
   background: "#eeeeee",
   subBackground: "#d3d3d3",
   border: "#D7D7D7",
@@ -39,7 +39,7 @@ const lightColors: ColorScheme = {
 
 // Same reason as light color
 // @ts-ignore
-const darkColors: ColorScheme = {
+export const darkColors: ColorScheme = {
   background: "#1e2433",
   subBackground: "#12161f",
   border: "#10141d",
