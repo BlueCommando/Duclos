@@ -34,7 +34,7 @@ const imagery = () => {
     
     router.push({
       pathname: "../screens/imagery/CropScreen",
-      params: {picturePath: picture?.path}
+      params: {picturePath: `file://${picture?.path}`}
     })
   };
 

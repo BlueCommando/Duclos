@@ -6,6 +6,11 @@ import useTheme, { ColorScheme } from '@/hooks/useTheme'
 import { router, useLocalSearchParams } from 'expo-router'
 import React, { useState } from 'react'
 import { Image, LayoutChangeEvent, LayoutRectangle, StyleSheet, View } from 'react-native'
+import { useImageManipulator } from 'expo-image-manipulator'
+import { Asset } from 'expo-asset';
+
+// Help with expo-image-manipulator:
+// https://docs.expo.dev/versions/latest/sdk/imagemanipulator/
 
 const CropScreen = () => {
   const { picturePath } = useLocalSearchParams<{picturePath: string}>();
@@ -15,6 +20,8 @@ const CropScreen = () => {
 
   const [cropInfo, updateCropInfo] = useState<boxState>();
 
+  const context = useImageManipulator(picturePath);
+
   const goBack = () => {
     if (router.canGoBack()){
       router.back();
@@ -23,8 +30,36 @@ const CropScreen = () => {
     }
   };
 
-  const goForward = () => {
-    console.log("next")
+  const goForward = async () => {
+    if (!layout){
+      throw new Error(`layout is an unknown value (${layout})`)
+    }
+    if (!cropInfo){
+      throw new Error(`cropInfo is an unknown value (${cropInfo})`)
+    }
+
+    const { width, height } = await Image.getSize(picturePath);
+
+    const widthScalar = width / layout.width;
+    const heightScalar = height / layout.height;
+
+    context.crop({
+      width: cropInfo.width * widthScalar,
+      height: cropInfo.height * heightScalar,
+      originX: cropInfo.x * widthScalar,
+      originY: cropInfo.y * heightScalar,
+    });
+
+    const render = await context.renderAsync();
+    const result = await render.saveAsync();
+    
+    router.push({
+      pathname: "./PrepromptScreen",
+      params: {
+        picturePath: picturePath,
+        editedPicturePath: result.uri,
+      }
+    });
   };
 
   const theme = useTheme();
@@ -38,7 +73,7 @@ const CropScreen = () => {
       onPressForward={goForward}
     >
       <View style={style.photoView} onLayout={onLayout}>
-        <Image source={{uri: `file://${picturePath}`}} style={style.photo}/>
+        <Image source={{uri: picturePath}} style={style.photo}/>
         
         <InverseMask borderRadius={cropBoxFileStyle.cornerRadius} parentLayout={layout} targetInfo={cropInfo}/>
 
