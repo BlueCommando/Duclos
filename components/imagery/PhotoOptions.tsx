@@ -1,34 +1,35 @@
 import useTheme, { ColorScheme } from '@/hooks/useTheme';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SinglePhotoOption from './SinglePhotoOption';
 
 type PhotoOptionsProps = {
+    style?: StyleProp<ViewStyle>
     header?: string,
     text?: string,
     onPressBack?: () => void,
     onPressForward?: () => void,
-    children: React.ReactNode,
+    children?: React.ReactNode,
 }
 
-const PhotoOptions = ({header, text, onPressBack, onPressForward, children}: PhotoOptionsProps) => {
+const PhotoOptions = ({style, header, text, onPressBack, onPressForward, children}: PhotoOptionsProps) => {
   const theme = useTheme();
-  const style = createPhotoOptionStyle(theme);
+  const stylesheet = createPhotoOptionStyle(theme);
 
   return (
     <> 
         <LinearGradient colors={theme.gradients.background}/>
 
-        <SafeAreaView style={style.mainContainer}>
-            <View style={style.childrenContainer}>{children}</View>
+        <SafeAreaView style={stylesheet.mainContainer}>
+            <View style={[stylesheet.childrenContainer, style]}>{children}</View>
 
-            { (header !== undefined) && <Text>{header}</Text> }
-            { (text !== undefined) && <Text>{text}</Text> }
+            { (header !== undefined) && <Text style={stylesheet.headerText}>{header}</Text> }
+            { (text !== undefined) && <Text style={stylesheet.text}>{text}</Text> }
         </SafeAreaView>
 
-        <View style={style.bottomBar}>
+        <View style={stylesheet.bottomBar}>
             <SinglePhotoOption onPress={onPressBack}/>
             <SinglePhotoOption onPress={onPressForward}/>
         </View>
@@ -45,6 +46,7 @@ const createPhotoOptionStyle = (color: ColorScheme) => {
 
         childrenContainer: {
             width: "100%",
+            height: 600,
             backgroundColor: color.opposite.background,
             marginTop: 10,
             marginBottom: 25, 
@@ -59,6 +61,18 @@ const createPhotoOptionStyle = (color: ColorScheme) => {
             justifyContent: "center",
             flexDirection: "row",
             backgroundColor: color.background,
+        },
+
+        headerText: {
+            fontWeight: "bold",
+            textAlign: "center",
+            fontSize: 25,
+            marginBottom: 10,
+        },
+
+        text: {
+            textAlign: "center",
+            fontSize: 15,
         }
     })
 

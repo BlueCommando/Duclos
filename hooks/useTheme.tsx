@@ -10,6 +10,7 @@ export interface ColorScheme {
 
   textColor: string,
   textShadowColor: string,
+  textPlaceholderColor: string,
 
   gradients: {
     background: [string, string],
@@ -29,6 +30,7 @@ export const lightColors: ColorScheme = {
   
   textColor: "#050505",
   textShadowColor: "#aaaaaa",
+  textPlaceholderColor: "#2727277e",
 
   gradients: {
     background: ["#eeeeee", "#7e8d8f"],
@@ -46,6 +48,7 @@ export const darkColors: ColorScheme = {
 
   textColor: "#eeeeee",
   textShadowColor: "#1d1d1d",
+  textPlaceholderColor: "#a8a8a880",
 
   gradients: {
     background: ["#12161f", "#1e2433"],

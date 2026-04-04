@@ -1,19 +1,27 @@
 import { cropBoxFileStyle } from '@/assets/styles/screens/imagery/CropBox.style'
-import CropBox, { boxState, CropBoxProps } from '@/components/imagery/CropBox'
+import CropBox, { boxState } from '@/components/imagery/CropBox'
 import InverseMask from '@/components/imagery/InverseMask'
 import PhotoOptions from '@/components/imagery/PhotoOptions'
 import useTheme, { ColorScheme } from '@/hooks/useTheme'
+import { useImageManipulator } from 'expo-image-manipulator'
 import { router, useLocalSearchParams } from 'expo-router'
 import React, { useState } from 'react'
 import { Image, LayoutChangeEvent, LayoutRectangle, StyleSheet, View } from 'react-native'
-import { useImageManipulator } from 'expo-image-manipulator'
-import { Asset } from 'expo-asset';
 
 // Help with expo-image-manipulator:
 // https://docs.expo.dev/versions/latest/sdk/imagemanipulator/
 
+type localParams = {
+  picturePath: string,
+  dWidth?: string,
+  dHeight?: string,
+  dX?: string,
+  dY?: string,
+};
+
 const CropScreen = () => {
-  const { picturePath } = useLocalSearchParams<{picturePath: string}>();
+  const params = useLocalSearchParams<localParams>();
+  const { picturePath, dWidth, dHeight, dX, dY } = params;
 
   const [layout, setLayout] = useState<LayoutRectangle>();
   const onLayout = (event: LayoutChangeEvent) => setLayout(event.nativeEvent.layout);
@@ -56,6 +64,11 @@ const CropScreen = () => {
     router.push({
       pathname: "./PrepromptScreen",
       params: {
+        ...params,
+        dWidth: cropInfo.width,
+        dHeight: cropInfo.height,
+        dX: cropInfo.x,
+        dY: cropInfo.y,
         picturePath: picturePath,
         editedPicturePath: result.uri,
       }
@@ -72,16 +85,16 @@ const CropScreen = () => {
       onPressBack={goBack}
       onPressForward={goForward}
     >
-      <View style={style.photoView} onLayout={onLayout}>
+      <View style={style.container} onLayout={onLayout}>
         <Image source={{uri: picturePath}} style={style.photo}/>
         
         <InverseMask borderRadius={cropBoxFileStyle.cornerRadius} parentLayout={layout} targetInfo={cropInfo}/>
 
         <CropBox 
-          width={"75%"} 
-          height={"75%"} 
-          x={"12.5%"} 
-          y={"12.5%"} 
+          width={dWidth && parseFloat(dWidth) || "75%"} 
+          height={dHeight && parseFloat(dHeight) || "75%"} 
+          x={dX && parseFloat(dX) || "12.5%"} 
+          y={dY && parseFloat(dY) ||"12.5%"} 
           parentLayout={layout} 
           onBoxStateChanged={updateCropInfo}
         />
@@ -94,9 +107,8 @@ const CropScreen = () => {
 
 const createCropScreenStyle = (colors: ColorScheme) => {
   const style = StyleSheet.create({
-    photoView: {
-      width: "100%", 
-      height: 600,
+    container: {
+      flex: 1,
     },
 
     photo: {
