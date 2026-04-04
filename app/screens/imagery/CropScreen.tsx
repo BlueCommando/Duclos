@@ -1,26 +1,20 @@
-import { cropBoxFileStyle } from '@/assets/styles/screens/imagery/CropBox.style'
+import { cropBoxFileStyle } from '@/assets/styles/components/imagery/CropBox.style'
+import { createCropScreenStyle } from '@/assets/styles/screens/imagery/CropScreen.style'
 import CropBox, { boxState } from '@/components/imagery/CropBox'
 import InverseMask from '@/components/imagery/InverseMask'
 import PhotoOptions from '@/components/imagery/PhotoOptions'
-import useTheme, { ColorScheme } from '@/hooks/useTheme'
+import useTheme from '@/hooks/useTheme'
 import { useImageManipulator } from 'expo-image-manipulator'
 import { router, useLocalSearchParams } from 'expo-router'
 import React, { useState } from 'react'
-import { Image, LayoutChangeEvent, LayoutRectangle, StyleSheet, View } from 'react-native'
+import { Image, LayoutChangeEvent, LayoutRectangle, View } from 'react-native'
+import { imageryLocalParams } from '../../../assets/styles/screens/imagery/ImageryLocalParam'
 
 // Help with expo-image-manipulator:
 // https://docs.expo.dev/versions/latest/sdk/imagemanipulator/
 
-type localParams = {
-  picturePath: string,
-  dWidth?: string,
-  dHeight?: string,
-  dX?: string,
-  dY?: string,
-};
-
 const CropScreen = () => {
-  const params = useLocalSearchParams<localParams>();
+  const params = useLocalSearchParams<imageryLocalParams>();
   const { picturePath, dWidth, dHeight, dX, dY } = params;
 
   const [layout, setLayout] = useState<LayoutRectangle>();
@@ -102,24 +96,6 @@ const CropScreen = () => {
       
     </PhotoOptions>
   )
-};
-//<InverseMask parentLayout={layout} targetInfo={cropInfo}/>
-
-const createCropScreenStyle = (colors: ColorScheme) => {
-  const style = StyleSheet.create({
-    container: {
-      flex: 1,
-    },
-
-    photo: {
-      flex: 1, 
-      height: null, 
-      width: null, 
-      resizeMode: 'contain',
-    }
-  });
-
-  return style
 };
 
 export default CropScreen

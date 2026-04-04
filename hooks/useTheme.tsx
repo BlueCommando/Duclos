@@ -1,5 +1,5 @@
 import React, { createContext, ReactNode, useContext } from 'react';
-import { useColorScheme } from 'react-native';
+import { ImageSourcePropType, useColorScheme } from 'react-native';
 
 // Detects if user is using light mode or dark mode
 
@@ -17,6 +17,11 @@ export interface ColorScheme {
   },
 
   statusBarStyle: "light-content" | "dark-content",
+  mode: "light" | "dark",
+  
+  assets: {
+    loadingCirclePath: ImageSourcePropType,
+  },
 
   opposite: ColorScheme,
 }
@@ -35,8 +40,13 @@ export const lightColors: ColorScheme = {
   gradients: {
     background: ["#eeeeee", "#7e8d8f"],
   },
+  
+  assets: {
+    loadingCirclePath: require("@/assets/images/loading/LightLoadingCircle.png"),
+  },
 
   statusBarStyle: "light-content" as const,
+  mode: "light" as const,
 };
 
 // Same reason as light color
@@ -54,7 +64,12 @@ export const darkColors: ColorScheme = {
     background: ["#12161f", "#1e2433"],
   },
 
+  assets: {
+    loadingCirclePath: require("@/assets/images/loading/DarkLoadingCircle.png"),
+  },
+
   statusBarStyle: "dark-content" as const,
+  mode: "dark" as const,
 };
 
 lightColors.opposite = darkColors;

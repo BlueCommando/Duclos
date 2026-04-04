@@ -1,11 +1,13 @@
+import { createPromptScreenStyle } from '@/assets/styles/screens/imagery/PrepromptScreen.style';
 import PhotoOptions from '@/components/imagery/PhotoOptions';
-import useTheme, { ColorScheme } from '@/hooks/useTheme';
+import useTheme from '@/hooks/useTheme';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
-import { StyleSheet, TextInput } from 'react-native';
+import { TextInput } from 'react-native';
+import { imageryLocalParams } from '../../../assets/styles/screens/imagery/ImageryLocalParam';
 
 const PrepromptScreen = () => {
-  const params = useLocalSearchParams<{prompt?: string}>();
+  const params = useLocalSearchParams<imageryLocalParams>();
 
   const [text, changeText] = useState(params.prompt || "");
 
@@ -31,11 +33,9 @@ const PrepromptScreen = () => {
     };
     
     if (genParams.prompt === "") genParams.prompt = undefined;
-    console.log(genParams.prompt)
 
-    if (!!true) return // del this later
     router.push({
-      pathname: "./PrepromptScreen",
+      pathname: "./LoadingResponseScreen",
       params: genParams,
     });
   };
@@ -62,24 +62,6 @@ const PrepromptScreen = () => {
       ></TextInput>
     </PhotoOptions>
   )
-};
-
-const createPromptScreenStyle = (colors: ColorScheme) => {
-  const stylesheet = StyleSheet.create({
-    container: {
-      flex: 1
-    },
-
-    textInput: {
-      flex: 1,
-      flexDirection: "row",
-      fontSize: 20,
-      color: colors.opposite.textColor,
-      margin: 10,
-    },
-  });
-
-  return stylesheet
 };
 
 export default PrepromptScreen

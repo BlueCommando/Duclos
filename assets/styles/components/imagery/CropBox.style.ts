@@ -2,8 +2,8 @@ import { ColorScheme } from "@/hooks/useTheme";
 import { StyleSheet } from "react-native";
 
 export const cropBoxFileStyle = {
-    cornerRadius: 50,
-    borderWidth: 10,
+  cornerRadius: 50,
+  borderWidth: 10,
 };
 
 export const createCropBoxStyle = (colors: ColorScheme) => {

@@ -1,7 +1,7 @@
-import { createCropBoxStyle, cropBoxFileStyle } from '@/assets/styles/screens/imagery/CropBox.style';
+import { createCropBoxStyle, cropBoxFileStyle } from '@/assets/styles/components/imagery/CropBox.style';
 import { lightColors } from '@/hooks/useTheme';
 import React, { useEffect, useState } from 'react';
-import { findNodeHandle, LayoutRectangle, PanResponder, View } from 'react-native';
+import { LayoutRectangle, PanResponder, View } from 'react-native';
 
 const cornerRadius = cropBoxFileStyle.cornerRadius;
 
