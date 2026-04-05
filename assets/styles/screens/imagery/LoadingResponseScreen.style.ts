@@ -58,7 +58,7 @@ export const createLoadingResponseScreenStyle = (colors: ColorScheme) => {
 
     loadingScreenView: {
       width: "40%",
-      top: "15%",
+      top: "20%",
       aspectRatio: 1,
     },
 

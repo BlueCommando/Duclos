@@ -1,4 +1,5 @@
 import { createLoadingResponseScreenStyle } from '@/assets/styles/screens/imagery/LoadingResponseScreen.style';
+import AiService from '@/components/ai/AiService';
 import useTheme from '@/hooks/useTheme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -6,7 +7,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Button, Image, ScrollView, Text, View } from 'react-native';
 import { imageryLocalParams } from '../../../assets/styles/screens/imagery/ImageryLocalParam';
 
-const loadingTextInitState = "GENERATING."
+const loadingTextInitState = "GENERATING.";
+
+const getUnixTime = () => Date.now() / 1000;
 
 const LoadingMessage = () => {
   const params = useLocalSearchParams<imageryLocalParams>();
@@ -14,18 +17,59 @@ const LoadingMessage = () => {
 
   const [loadingText, changeLoadingText] = useState(loadingTextInitState);
 
+  if (!editedPicturePath){
+    throw new Error(`'editedPicturePath' is at an unknown value (${editedPicturePath})`);
+  }
+
+  // Functionality
+  const generateResponse = async () => {
+    const startTime = getUnixTime();
+
+    const pictureBase64 = await AiService.imageToBase64(editedPicturePath);
+
+    const response = await AiService.imageCompletion({
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: prompt,
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: pictureBase64,
+              },
+            },
+          ],
+        }
+      ],
+    });
+
+    const endTime = getUnixTime() - startTime;
+    //alert(`TOOK: ${Math.floor(endTime/60/60)} Hours, ${Math.floor(endTime/60)} Minutes, ${Math.floor(endTime%60)} Seconds! (Unix: ${endTime})`);
+
+    // switch to text screen.
+    console.log(response.text);
+  };
+
+  useEffect(() => {generateResponse();}, []);
+
+  // Text
   useEffect(() => {
     setTimeout(() => {
       changeLoadingText(prev => {
         const amount = prev.split(".").length - 1;
-        if (amount >= 3) return loadingTextInitState
-        return prev + "."
+        if (amount >= 3) return loadingTextInitState;
+        return prev + ".";
       })
     }, 1000);
   }, [loadingText]);
 
   const rotationAnim = useRef(new Animated.Value(0)).current;
 
+  // Animation
   useEffect(() => {
     Animated.loop(
       Animated.timing(rotationAnim, {
@@ -34,8 +78,8 @@ const LoadingMessage = () => {
         easing: (n) => n, // make easing linear
         useNativeDriver: false,
       })
-    ).start()
-  })
+    ).start();
+  }, []);
 
   const rotate = rotationAnim.interpolate({
     inputRange: [0, 1],
@@ -49,7 +93,7 @@ const LoadingMessage = () => {
     <LinearGradient style={stylesheet.container} colors={theme.gradients.background}>
       {/*TEMP remove later*/}
       <View style={{marginHorizontal: 16, marginTop: 100, position: "absolute"}}>
-        <Button title='go the fuck back' onPress={()=>router.back()}></Button>
+        <Button title='go the fuck back' onPress={()=>{if(router.canGoBack()){router.back()}else{console.log("cant go back!")}}}></Button>
       </View>
 
       <View style={stylesheet.centerView}>

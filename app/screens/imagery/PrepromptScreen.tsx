@@ -34,7 +34,8 @@ const PrepromptScreen = () => {
     
     if (genParams.prompt === "") genParams.prompt = undefined;
 
-    router.push({
+    router.dismissAll();
+    router.replace({
       pathname: "./LoadingResponseScreen",
       params: genParams,
     });
