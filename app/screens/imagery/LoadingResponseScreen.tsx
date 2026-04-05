@@ -32,10 +32,13 @@ const LoadingMessage = () => {
         {
           role: "user",
           content: [
-            {
-              type: "text",
-              text: prompt,
-            },
+            ...(
+              prompt ? [{
+                type: "text",
+                text: prompt,
+              }] : []
+            ),
+
             {
               type: "image_url",
               image_url: {
@@ -47,11 +50,14 @@ const LoadingMessage = () => {
       ],
     });
 
-    const endTime = getUnixTime() - startTime;
-    //alert(`TOOK: ${Math.floor(endTime/60/60)} Hours, ${Math.floor(endTime/60)} Minutes, ${Math.floor(endTime%60)} Seconds! (Unix: ${endTime})`);
-
-    // switch to text screen.
-    console.log(response.text);
+    router.replace({
+      pathname: "./TempChat",
+      params: {
+        ...params,
+        aiResponse: response.text,
+        aiResponseTimeUnix: getUnixTime() - startTime,
+      },
+    })
   };
 
   useEffect(() => {generateResponse();}, []);
@@ -89,7 +95,7 @@ const LoadingMessage = () => {
   const theme = useTheme();
   const stylesheet = createLoadingResponseScreenStyle(theme);
 
-  return (<>
+  return (
     <LinearGradient style={stylesheet.container} colors={theme.gradients.background}>
       {/*TEMP remove later*/}
       <View style={{marginHorizontal: 16, marginTop: 100, position: "absolute"}}>
@@ -136,7 +142,7 @@ const LoadingMessage = () => {
         </View>
       </View>
     </LinearGradient>
-  </>)
+  )
 }
 
 export default LoadingMessage

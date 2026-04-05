@@ -3,7 +3,7 @@ import NetInfo from "@react-native-community/netinfo";
 import { Asset } from 'expo-asset';
 import { File } from 'expo-file-system';
 import { CompletionParams, initLlama, LlamaContext, NativeCompletionResult } from 'llama.rn';
-import { Alert, BackHandler } from 'react-native';
+import { Alert, BackHandler, ImageSourcePropType } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import RNFS, { DownloadProgressCallbackResult } from 'react-native-fs';
 import AiFileCheck from './AiFileCheck';
