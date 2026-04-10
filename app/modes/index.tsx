@@ -1,10 +1,8 @@
 import AiService from '@/components/ai/AiService';
+import { router, useFocusEffect } from 'expo-router';
 import { useState } from 'react';
 import { Image, Text, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-// finish loading screen
-
 
 const test = async (msg: string) => {
   await AiService.init({
@@ -59,6 +57,22 @@ export default function Index() {
     console.log(`${msg}\n\n`);
     console.log(await test(msg));
   }
+
+  const t = async ()=>router.replace({
+    pathname: "../screens/imagery/TempChat",
+    params: {
+      //picturePath = string,
+      editedPicturePath: await AiService.imageToBase64(require("@/assets/app/PLACEHOLDER.png")),
+      prompt: "What kind of mango is this?",
+      aiResponse: "This is phonk edit mango.",
+      aiResponseTimeUnix: 0.1,
+      dWidth: 100,
+      dHeight: 100,
+      dX: 0,
+      dY: 0,
+    },
+  })
+  useFocusEffect(() => t)
 
   return (
     <SafeAreaView>

@@ -45,7 +45,7 @@ export const lightColors: ColorScheme = {
     loadingCirclePath: require("@/assets/images/loading/LightLoadingCircle.png"),
   },
 
-  statusBarStyle: "light-content" as const,
+  statusBarStyle: "dark-content" as const,
   mode: "light" as const,
 };
 
@@ -68,7 +68,7 @@ export const darkColors: ColorScheme = {
     loadingCirclePath: require("@/assets/images/loading/DarkLoadingCircle.png"),
   },
 
-  statusBarStyle: "dark-content" as const,
+  statusBarStyle: "light-content" as const,
   mode: "dark" as const,
 };
 

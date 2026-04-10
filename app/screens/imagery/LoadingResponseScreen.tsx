@@ -4,7 +4,7 @@ import useTheme from '@/hooks/useTheme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Button, Image, ScrollView, Text, View } from 'react-native';
+import { Animated, Image, ScrollView, Text, View } from 'react-native';
 import { imageryLocalParams } from '../../../assets/styles/screens/imagery/ImageryLocalParam';
 
 const loadingTextInitState = "GENERATING.";
@@ -16,7 +16,7 @@ const LoadingMessage = () => {
   const { editedPicturePath, prompt } = params;
 
   const [loadingText, changeLoadingText] = useState(loadingTextInitState);
-
+  
   if (!editedPicturePath){
     throw new Error(`'editedPicturePath' is at an unknown value (${editedPicturePath})`);
   }
@@ -97,11 +97,6 @@ const LoadingMessage = () => {
 
   return (
     <LinearGradient style={stylesheet.container} colors={theme.gradients.background}>
-      {/*TEMP remove later*/}
-      <View style={{marginHorizontal: 16, marginTop: 100, position: "absolute"}}>
-        <Button title='go the fuck back' onPress={()=>{if(router.canGoBack()){router.back()}else{console.log("cant go back!")}}}></Button>
-      </View>
-
       <View style={stylesheet.centerView}>
 
         <View style={stylesheet.infoContainer}>
