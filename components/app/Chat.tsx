@@ -1,8 +1,8 @@
 import { createChatStyle } from '@/assets/styles/components/app/chat.style';
 import useTheme from '@/hooks/useTheme';
-import React, { forwardRef, useImperativeHandle, useState } from 'react';
-import { Image, Text, View, ScrollView } from 'react-native';
-import AiService from '../ai/AiService';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { Animated, Image, ScrollView, Text, View } from 'react-native';
+import aiService from '../ai/AiService';
 
 type allMessagesFormat = messageFormat[];
 
@@ -39,6 +39,7 @@ export type ChatRef = {
   createMessage: (action: inputtedMessageFormat) => void,
   createLoadingText: () => void,
   destroyLoadingText: () => void,
+  getAllMessages: () => allMessagesFormat,
 };
 
 type ChatProps = {
@@ -74,7 +75,7 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         };
 
         if (context.image.type === "uri" || context.image.type === "require"){
-          imageText.content = await AiService.imageToBase64(context.image.content);
+          imageText.content = await aiService.imageToBase64(context.image.content);
         }
         if (context.image.type === "base64"){
           imageText.content = context.image.content;
@@ -90,10 +91,13 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const createLoadingText = () => changeLoadingMessage(true);
   const destroyLoadingText = () => changeLoadingMessage(false);
 
+  const getAllMessages = () => allMessages;
+
   useImperativeHandle(ref, () => ({
     createMessage,
     createLoadingText,
     destroyLoadingText,
+    getAllMessages,
   }));
 
   const theme = useTheme();
@@ -146,13 +150,55 @@ const Bubble = ({message}: BubbleProps) => {
           </View>
 
         : message.type === "loading"
-         ? <View style={stylesheet.loadingBubble}>
-          {/*Anim here*/}
-          <Text onLayout={() => console.log("tuffffff!")}>432432432</Text>
-        </View>
+         ? <View style={stylesheet.loadingBubbleView}>
+            <LoadingBubble offsetAlpha={0}/>
+            <LoadingBubble offsetAlpha={0.33}/>
+            <LoadingBubble offsetAlpha={0.66}/>
+          </View>
 
         : <Text>'MESSAGE.TYPE' IS AT AN UNKNOWN VALUE. PLEASE REPORT!</Text>
       }
     </View>
   )
+};
+
+type LoadingBubbleProps = {
+  offsetAlpha?: number,
+  yAnim?: number
+}
+
+const defaultYAnim = 5
+
+const LoadingBubble = ({offsetAlpha, yAnim}: LoadingBubbleProps) => {
+  yAnim = yAnim || defaultYAnim;
+
+  const theme = useTheme();
+  const stylesheet = createChatStyle(theme);
+  
+  const [yOffset, setYOffset] = useState<number>(yAnim * 2 * (offsetAlpha || 1) - yAnim);
+  const y = useRef(new Animated.Value(yOffset)).current;
+
+  useEffect(() => {
+    const curYOffset = yOffset >= 0 ? -yAnim : yAnim;
+    const distance = Math.abs(curYOffset - yOffset);
+
+    y.setValue(curYOffset);
+    y.stopAnimation();
+
+    Animated.timing(y, {
+      toValue: yOffset || 0,
+      duration: (distance / 10) * 1000,
+      useNativeDriver: true,
+    }).start(() => setYOffset(prev => prev >= 0 ? -yAnim : yAnim));
+  }, [yOffset]);
+
+  return (
+    <Animated.View
+      style={[ stylesheet.loadingBubble, {
+        transform: [
+          {translateY: y,},
+        ],
+      }]}
+    />
+  );
 }

@@ -29,27 +29,24 @@ const TempChat = () => {
           text: prompt,
         }
       ]
-    })
-
-    chatSettings.current?.createMessage({
-      role: "receiver",
-      content: [
-        {
-          type: "image",
-          image: {
-            type: "base64",
-            content: editedPicturePath,
-          },
-        },
-        {
-          type: "text",
-          text: aiResponse,
-        }
-      ]
-    })
+    });
 
     chatSettings.current?.createLoadingText()
-  }, [])
+
+    setTimeout(() => {
+      chatSettings.current?.destroyLoadingText();
+
+      chatSettings.current?.createMessage({
+        role: "receiver",
+        content: [
+          {
+            type: "text",
+            text: aiResponse,
+          }
+        ]
+      });
+    }, 3000);
+  }, []);
 
   return (
     <View>

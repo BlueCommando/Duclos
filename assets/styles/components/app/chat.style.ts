@@ -36,6 +36,8 @@ export const createChatStyle = (colors: ColorScheme) => {
     textBubble: {
       flex: 1,
       padding: 10,
+      color: "#1b1b1b",
+      fontWeight: "500",
     },
 
     imageView: {
@@ -48,7 +50,18 @@ export const createChatStyle = (colors: ColorScheme) => {
       aspectRatio: 1,
     },
 
+    loadingBubbleView: {
+      flexDirection: "row",
+      justifyContent: "center",
+      padding: 10,
+      gap: 10,
+    },
+
     loadingBubble: {
+      width: "20%",
+      aspectRatio: 1,
+      borderRadius: "50%",
+      backgroundColor: "#888888",
       padding: 10,
     },
   });

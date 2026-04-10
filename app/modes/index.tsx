@@ -59,7 +59,7 @@ export default function Index() {
   }
 
   const t = async ()=>router.replace({
-    pathname: "../screens/imagery/TempChat",
+    pathname: "/screens/imagery/TempChat",
     params: {
       //picturePath = string,
       editedPicturePath: await AiService.imageToBase64(require("@/assets/app/PLACEHOLDER.png")),
