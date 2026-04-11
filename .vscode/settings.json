@@ -7,5 +7,9 @@
   "typescriptreact": {
     "editor.tabSize": 1,
     "editor.insertSpaces": true
+  },
+  "workbench.editor.customLabels.patterns": {
+    "**/index.tsx": "${dirname} (${filename}.${extname})",
+    "**/_layout.tsx": "${dirname}Layout (${filename}.${extname})",
   }
 }

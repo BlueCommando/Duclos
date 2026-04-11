@@ -1,17 +1,17 @@
 import { imageryLocalParams } from '@/assets/styles/screens/imagery/ImageryLocalParam';
 import { Chat, ChatRef } from '@/components/app/Chat';
-import { useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useRef } from 'react';
-import { View } from 'react-native';
+import ChatInput from '@/components/app/ChatInput';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { KeyboardAvoidingView, Platform, View } from 'react-native';
+import RNFS from 'react-native-fs';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const TempChat = () => {
   const chatSettings = useRef<ChatRef>(null);
 
   const params = useLocalSearchParams<imageryLocalParams>();
-  const { prompt, aiResponse, aiResponseTimeUnix, editedPicturePath } = params;
-
-  const t = aiResponseTimeUnix && parseFloat(aiResponseTimeUnix) || 1;
-  alert(`TOOK: ${Math.floor(t/60/60)} Hours, ${Math.floor(t/60)} Minutes, ${Math.floor(t%60)} Seconds!\n(Unix: ${t})`);
+  const { prompt, aiResponse, aiResponseTimeUnix, picturePath, editedPicturePath } = params;
 
   useEffect(() => {
     chatSettings.current?.createMessage({
@@ -48,10 +48,28 @@ const TempChat = () => {
     }, 3000);
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        //if (picturePath) RNFS.unlink(picturePath);
+        //if (editedPicturePath) RNFS.unlink(editedPicturePath);
+      };
+    }, []),
+  );
+
   return (
-    <View>
+
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : undefined} 
+      style={{flex: 1}}
+    >
       <Chat ref={chatSettings}/>
-    </View>
+      <SafeAreaView edges={['bottom']}>
+        <View>
+          <ChatInput/>
+        </View>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   )
 }
 

@@ -58,7 +58,8 @@ export const createChatStyle = (colors: ColorScheme) => {
     },
 
     loadingBubble: {
-      width: "20%",
+      flex: 1,
+      width: 50,
       aspectRatio: 1,
       borderRadius: "50%",
       backgroundColor: "#888888",

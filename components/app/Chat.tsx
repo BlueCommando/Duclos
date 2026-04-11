@@ -35,6 +35,8 @@ const genUniqueStr = (digits: number) =>  {
     return uuid.join('');
 };
 
+// Chatbox:
+
 export type ChatRef = {
   createMessage: (action: inputtedMessageFormat) => void,
   createLoadingText: () => void,
@@ -100,11 +102,16 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     getAllMessages,
   }));
 
+  const scrollRef = useRef<ScrollView>(null);
+
   const theme = useTheme();
   const stylesheet = createChatStyle(theme);
 
   return (
-    <ScrollView>
+    <ScrollView
+      ref={scrollRef}
+      onLayout={ () => scrollRef.current?.scrollToEnd({ animated: true }) }
+    >
       <View style={stylesheet.chatView}>
         {allMessages.map((v) => {
           return (
@@ -125,6 +132,8 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     </ScrollView>
   );
 })
+
+// Text Bubble:
 
 type BubbleProps = {
   message: messageFormat,
@@ -161,6 +170,8 @@ const Bubble = ({message}: BubbleProps) => {
     </View>
   )
 };
+
+// Loading Bubble:
 
 type LoadingBubbleProps = {
   offsetAlpha?: number,
