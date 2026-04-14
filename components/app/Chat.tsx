@@ -3,6 +3,17 @@ import useTheme from '@/hooks/useTheme';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Animated, Image, ScrollView, Text, View } from 'react-native';
 import aiService from '../ai/AiService';
+import Markdown from 'react-native-markdown-display';
+import Katex from 'react-native-katex';
+
+// Help with react-native-markdown-display:
+// https://github.com/iamacup/react-native-markdown-display/blob/master/README.md
+//
+// Help with react-native-katex:
+// https://github.com/3axap4eHko/react-native-katex/blob/master/README.md
+// ^ besides this, there isn't any other documentation.
+
+// add time of date below the text and a 3 dots to copy all text
 
 type allMessagesFormat = messageFormat[];
 
@@ -34,6 +45,23 @@ const genUniqueStr = (digits: number) =>  {
 
     return uuid.join('');
 };
+
+const inlineStyle = `
+html, body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.katex {
+  font-size: 50px;
+  margin: 0;
+  display: flex;
+}
+`;
 
 // Chatbox:
 
@@ -139,34 +167,109 @@ type BubbleProps = {
   message: messageFormat,
 }
 
+type textFormat = {
+  type: "markdown" | "katex",
+  content: string,
+}
+
 const Bubble = ({message}: BubbleProps) => {
   const theme = useTheme();
   const stylesheet = createChatStyle(theme);
 
-  const bubbleType = message.role === "sender" ? stylesheet.senderBubble : stylesheet.reciverBubble
+  const bubbleType = message.type !== "loading" 
+    ? (message.role === "sender" ? stylesheet.senderBubble : stylesheet.reciverBubble)
+    : stylesheet.reciverLoadingBubble;
+
+  const bubbleInfoType = message.role === "sender" 
+   ? stylesheet.senderBubbleInfoView 
+   : stylesheet.reciverBubbleInfoView;
+
+  const texts: textFormat[] = []
+
+  if (message.type === "text"){
+    // "\[" means in a equation (use katex)
+    // "\]" means we're done with the equation (go back to markdown)
+
+    let curEscChar = ""
+    let content = ""
+
+    for (let i = 0; i < message.content.length; i++) {
+      const char = message.content[i];
+      curEscChar += char;
+
+      if (char === "\\") curEscChar += message.content[i + 1] || "";
+
+      const isEnteringEqu = curEscChar === "\\[";
+      const isExitingEqu = curEscChar === "\\]";
+
+      if (isEnteringEqu || isExitingEqu){
+
+        texts.push({
+          type: isEnteringEqu && "markdown" || "katex",
+          content: content,
+        })
+        curEscChar = "";
+        content = "";
+        i++;
+
+      } else {
+
+        content += char;
+        curEscChar = "";
+
+      };
+    };
+
+    if (content !== ""){
+      texts.push({
+        type: "markdown",
+        content: content,
+      })
+    }
+  }
 
   return (
-    <View style={[stylesheet.globalBubble, bubbleType]}>
-      {
-        message.type === "text" 
-          ? <View style={stylesheet.textView}>
-              <Text style={stylesheet.textBubble}>{message.content}</Text>
+    <View style={stylesheet.bubbleView}>
+      <View style={[stylesheet.globalBubble, bubbleType]}>
+        {
+          message.type === "text" 
+            ? <View style={stylesheet.textView}>
+                {texts.map((v) => {
+                  if (v.type === "markdown") return <Markdown key={genUniqueStr(8)}>{v.content}</Markdown>;
+                  if (v.type === "katex"){
+                    return <View key={genUniqueStr(8)} style={stylesheet.katexView}>
+                      <Katex 
+                        style={stylesheet.katex}
+                        expression={v.content}
+                        inlineStyle={inlineStyle}
+                        displayMode={false}
+                        throwOnError={false}
+                        errorColor="#f00"
+                      />
+                    </View>
+                  }
+                })}
+              </View>
+
+          : message.type === "image"
+            ? <View style={stylesheet.imageView}>
+              <Image style={stylesheet.imageBubble} source={{uri: message.content}}/>
             </View>
 
-        : message.type === "image"
-          ? <View style={stylesheet.imageView}>
-            <Image style={stylesheet.imageBubble} source={{uri: message.content}}/>
-          </View>
+          : message.type === "loading"
+          ? <View style={stylesheet.loadingBubbleView}>
+              <LoadingBubble offsetAlpha={0}/>
+              <LoadingBubble offsetAlpha={0.33}/>
+              <LoadingBubble offsetAlpha={0.66}/>
+            </View>
 
-        : message.type === "loading"
-         ? <View style={stylesheet.loadingBubbleView}>
-            <LoadingBubble offsetAlpha={0}/>
-            <LoadingBubble offsetAlpha={0.33}/>
-            <LoadingBubble offsetAlpha={0.66}/>
-          </View>
+          : <Text>'MESSAGE.TYPE' IS AT AN UNKNOWN VALUE. PLEASE REPORT!</Text>
+        }
+      </View>
 
-        : <Text>'MESSAGE.TYPE' IS AT AN UNKNOWN VALUE. PLEASE REPORT!</Text>
-      }
+      <View style={[stylesheet.globalBubbleInfoView, bubbleInfoType]}>
+
+      </View>
     </View>
   )
 };
