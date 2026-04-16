@@ -5,7 +5,7 @@ export const createChatStyle = (colors: ColorScheme) => {
   const styles = StyleSheet.create({
     chatView: {
       flexDirection: "column",
-      gap: 5,
+      gap: 25,
       paddingTop: 10,
       paddingBottom: 10,
     },
@@ -36,17 +36,32 @@ export const createChatStyle = (colors: ColorScheme) => {
     globalBubbleInfoView: {
       width: "45%",
       height: 30,
-      backgroundColor: "#000"
+      gap: 5,
     },
 
     senderBubbleInfoView: {
       alignSelf: "flex-end",
-      marginRight: 10,
+      justifyContent: "center",
     },
 
     reciverBubbleInfoView: {
-      width: "90%",
-      marginLeft: 10,
+      alignSelf: "flex-start",
+      justifyContent: "center",
+    },
+
+    bubbleInfoTimeText: {
+      color: colors.textColor,
+    },
+
+    bubbleInfoButton: {
+      height: "100%",
+      aspectRatio: 1,
+      justifyContent: "center",
+    },
+
+    bubbleInfoButtonImage: {
+      width: "100%",
+      height: "100%",
     },
 
     textView: {

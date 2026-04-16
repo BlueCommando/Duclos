@@ -1,11 +1,15 @@
 import { createChatStyle } from '@/assets/styles/components/app/chat.style';
 import useTheme from '@/hooks/useTheme';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { Animated, Image, ScrollView, Text, View } from 'react-native';
+import { Animated, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import aiService from '../ai/AiService';
 import Markdown from 'react-native-markdown-display';
 import Katex from 'react-native-katex';
+import ContextMenu from "react-native-context-menu-view";
 
+// Help with react-native-context-menu-view:
+// https://github.com/mpiannucci/react-native-context-menu-view
+//
 // Help with react-native-markdown-display:
 // https://github.com/iamacup/react-native-markdown-display/blob/master/README.md
 //
@@ -13,14 +17,13 @@ import Katex from 'react-native-katex';
 // https://github.com/3axap4eHko/react-native-katex/blob/master/README.md
 // ^ besides this, there isn't any other documentation.
 
-// add time of date below the text and a 3 dots to copy all text
-
 type allMessagesFormat = messageFormat[];
 
 type messageFormat = {
   role: "sender" | "receiver",
   type: "text" | "image" | "loading",
   content: string,
+  time: number,
 };
 
 type inputtedMessageFormat = {
@@ -93,6 +96,7 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           role: action.role,
           type: context.type,
           content: context.text,
+          time: Date.now(),
         });
 
       } else if (context.type === "image") {
@@ -102,6 +106,7 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           role: action.role,
           type: context.type,
           content: "",
+          time: Date.now(),
         };
 
         if (context.image.type === "uri" || context.image.type === "require"){
@@ -152,7 +157,7 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
 
         {loadingMessage && (
           <Bubble 
-            message={{type: "loading", role: "receiver", content: "NULL"}}
+            message={{type: "loading", role: "receiver", content: "NULL", time: Date.now(),}}
             key={genUniqueStr(8)}
           />
         )}
@@ -183,6 +188,10 @@ const Bubble = ({message}: BubbleProps) => {
   const bubbleInfoType = message.role === "sender" 
    ? stylesheet.senderBubbleInfoView 
    : stylesheet.reciverBubbleInfoView;
+  
+  const bubbleInfoDir = message.role === "sender" 
+   ? "row" 
+   : "row-reverse";
 
   const texts: textFormat[] = []
 
@@ -228,6 +237,16 @@ const Bubble = ({message}: BubbleProps) => {
     }
   }
 
+  const dateClass = new Date(message.time);
+  const unix = message.time / 1000;
+
+  const day = dateClass.getDay() + 1;
+  const month = dateClass.toLocaleString("default", { month: "short" });
+  const year = dateClass.getFullYear();
+  const hours = (dateClass.getHours() + 11) % 12 + 1;
+  const minutes = String(Math.floor(unix / 60 % 60)).padStart(2, "0");
+  const AMPM = dateClass.getHours() - 11 < 12 ? 'PM' : 'AM';
+
   return (
     <View style={stylesheet.bubbleView}>
       <View style={[stylesheet.globalBubble, bubbleType]}>
@@ -267,9 +286,20 @@ const Bubble = ({message}: BubbleProps) => {
         }
       </View>
 
-      <View style={[stylesheet.globalBubbleInfoView, bubbleInfoType]}>
+      {(message.type !== "loading") && (
+        <View style={[stylesheet.globalBubbleInfoView, bubbleInfoType, {flexDirection: bubbleInfoDir}]}>
+          <Text style={stylesheet.bubbleInfoTimeText}>
+            {`${month} ${day} ${year}, ${hours}:${minutes} ${AMPM}`}
+          </Text>
 
-      </View>
+          <TouchableOpacity style={stylesheet.bubbleInfoButton}>
+            <Image 
+              style={stylesheet.bubbleInfoButtonImage} 
+              source={require("@/assets/app/PLACEHOLDER.png")}
+            />
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   )
 };
