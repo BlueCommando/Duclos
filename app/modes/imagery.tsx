@@ -7,19 +7,6 @@ import React, { useRef } from 'react'
 import { TouchableOpacity, View } from 'react-native'
 import { Camera } from 'react-native-vision-camera'
 
-// TODO:
-//
-// Display camera ✅
-// Get picture from user camera ✅
-// Create Crop box ✅
-// allow user to crop image ✅
-// tell user if they want to pre-input a message for the image ✅
-// loading screen for generation ✅
-// make chat screen (will also be used for chat, so make sure it's perfect) ❌
-// try react-native-markdown-display for the ai... ❌
-// phone flash animation when taking a picture ❌
-//
-
 // Help with react-native-vision-camera:
 // https://react-native-vision-camera.com/docs/api
 

@@ -1,14 +1,28 @@
 import { createChatStyle } from '@/assets/styles/components/app/chat.style';
 import useTheme from '@/hooks/useTheme';
+import { CameraRoll } from "@react-native-camera-roll/camera-roll";
+import Clipboard from '@react-native-clipboard/clipboard';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { Animated, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import aiService from '../ai/AiService';
-import Markdown from 'react-native-markdown-display';
+import { Alert, Animated, Image, Platform, ScrollView, Text, View } from 'react-native';
+import ContextMenu, { ContextMenuAction } from "react-native-context-menu-view";
+import RNFS from 'react-native-fs';
 import Katex from 'react-native-katex';
-import ContextMenu from "react-native-context-menu-view";
+import Markdown from 'react-native-markdown-display';
+import Toast from 'react-native-simple-toast';
+import aiService from '../ai/AiService';
+import hasAndroidPermission from '../other/HasAndroidPermission';
 
+// Help with react-native-simple-toast:
+// https://github.com/vonovak/react-native-simple-toast/blob/master/README.md
+//
+// Help with react-native-camera-roll/camera-roll:
+// https://github.com/react-native-cameraroll/react-native-cameraroll/blob/master/README.md
+// 
+// Help with react-native-clipboard:
+// https://github.com/react-native-clipboard/clipboard/blob/master/README.md
+//
 // Help with react-native-context-menu-view:
-// https://github.com/mpiannucci/react-native-context-menu-view
+// https://github.com/mpiannucci/react-native-context-menu-view/blob/main/README.md
 //
 // Help with react-native-markdown-display:
 // https://github.com/iamacup/react-native-markdown-display/blob/master/README.md
@@ -37,6 +51,62 @@ type inputtedMessageFormat = {
     },
   }[],
 };
+
+type infoContextButtonEvent = {
+  name: string,
+  index: number,
+  message: messageFormat,
+}
+
+type infoContextButtonFormat = {
+  title: string,
+  onPress?: (event: infoContextButtonEvent) => void,
+};
+
+let tuff = null;
+
+const globalContextButtons: infoContextButtonFormat[] = [];
+const textContextButtons: infoContextButtonFormat[] = [
+  {
+    title: "Copy text",
+    onPress: (e) => {
+      Clipboard.setString(e.message.content);
+      Toast.show("Copied Text to Clipboard Successfully!", 3000);
+    }
+  },
+];
+const imageContextButtons: infoContextButtonFormat[] = [
+  {
+    title: "Download Image",
+    onPress: async (e) => {
+      // Permissions
+      if (Platform.OS === "android" && !(await hasAndroidPermission())){
+        Alert.alert(
+          "Permissions Required", 
+          "Accept the asked permission to download the image.",
+          [
+            {
+              text: "OK",
+            },
+          ]
+        );
+        return;
+      }
+
+      // Base64 to JPG:
+      const base64 = e.message.content.replace(/^data:image\/\w+;base64,/, "");
+      const path = `${RNFS.CachesDirectoryPath}/${Date.now()}.jpg`;
+
+      await RNFS.writeFile(path, base64, "base64");
+
+      // Save:
+      await CameraRoll.saveAsset(path, { type: "photo" });
+      await RNFS.unlink(path);
+
+      Toast.show("Downloaded Image Successfully!", 3000);
+    }
+  },
+];
 
 const genUniqueStr = (digits: number) =>  {
     const str = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVXZ';
@@ -237,6 +307,20 @@ const Bubble = ({message}: BubbleProps) => {
     }
   }
 
+  // Context buttons:
+  const contentButtons: infoContextButtonFormat[] = message.type === "text"
+    && [...globalContextButtons, ...textContextButtons]
+    || message.type === "image"
+    && [...globalContextButtons, ...imageContextButtons]
+    || [...globalContextButtons];
+
+  const actionButtons: ContextMenuAction[] = [];
+
+  for (var i = 0; i < contentButtons.length; i++) {
+    actionButtons.push({title: contentButtons[i].title,})
+  }
+
+  // Time:
   const dateClass = new Date(message.time);
   const unix = message.time / 1000;
 
@@ -249,12 +333,18 @@ const Bubble = ({message}: BubbleProps) => {
 
   return (
     <View style={stylesheet.bubbleView}>
+      {/*The Bubble:*/}
       <View style={[stylesheet.globalBubble, bubbleType]}>
         {
           message.type === "text" 
             ? <View style={stylesheet.textView}>
                 {texts.map((v) => {
-                  if (v.type === "markdown") return <Markdown key={genUniqueStr(8)}>{v.content}</Markdown>;
+                  if (v.type === "markdown"){
+                    return <Markdown key={genUniqueStr(8)}>
+                      {v.content}
+                    </Markdown>;
+                  }
+
                   if (v.type === "katex"){
                     return <View key={genUniqueStr(8)} style={stylesheet.katexView}>
                       <Katex 
@@ -286,18 +376,32 @@ const Bubble = ({message}: BubbleProps) => {
         }
       </View>
 
+      {/*Info Button:*/}
       {(message.type !== "loading") && (
         <View style={[stylesheet.globalBubbleInfoView, bubbleInfoType, {flexDirection: bubbleInfoDir}]}>
           <Text style={stylesheet.bubbleInfoTimeText}>
             {`${month} ${day} ${year}, ${hours}:${minutes} ${AMPM}`}
           </Text>
 
-          <TouchableOpacity style={stylesheet.bubbleInfoButton}>
+          <ContextMenu
+            actions={actionButtons}
+            onPress={(e) => {
+              const realContext = contentButtons[e.nativeEvent.index];
+              if (!realContext.onPress) return;
+
+              realContext.onPress({
+                name: e.nativeEvent.name, 
+                index: e.nativeEvent.index,
+                message: message,
+              })
+            }}
+            style={stylesheet.bubbleInfoButton}
+          >
             <Image 
               style={stylesheet.bubbleInfoButtonImage} 
               source={require("@/assets/app/PLACEHOLDER.png")}
             />
-          </TouchableOpacity>
+          </ContextMenu>
         </View>
       )}
     </View>

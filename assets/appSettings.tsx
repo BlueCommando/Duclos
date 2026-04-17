@@ -40,6 +40,7 @@ Rules:
 - Do NOT invent new variables.
 - Do NOT explain concepts unless asked.
 - Keep the solution concise and structured.
+- If the user has no problem, then you may have a normal conversation.
                 `
             },
         ],
