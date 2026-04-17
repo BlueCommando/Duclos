@@ -63,8 +63,6 @@ type infoContextButtonFormat = {
   onPress?: (event: infoContextButtonEvent) => void,
 };
 
-let tuff = null;
-
 const globalContextButtons: infoContextButtonFormat[] = [];
 const textContextButtons: infoContextButtonFormat[] = [
   {
@@ -385,6 +383,7 @@ const Bubble = ({message}: BubbleProps) => {
 
           <ContextMenu
             actions={actionButtons}
+            dropdownMenuMode={true}
             onPress={(e) => {
               const realContext = contentButtons[e.nativeEvent.index];
               if (!realContext.onPress) return;

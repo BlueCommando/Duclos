@@ -1,4 +1,4 @@
-import { createCropBoxStyle, cropBoxFileStyle } from '@/assets/styles/components/imagery/CropBox.style';
+import { createCropBoxStyle, cropBoxFileStyle } from '@/assets/styles/components/app/CropScreen/CropBox.style';
 import { lightColors } from '@/hooks/useTheme';
 import React, { useEffect, useState } from 'react';
 import { LayoutRectangle, PanResponder, View } from 'react-native';

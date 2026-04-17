@@ -1,20 +1,24 @@
-import { cropBoxFileStyle } from '@/assets/styles/components/imagery/CropBox.style'
-import { createCropScreenStyle } from '@/assets/styles/screens/imagery/CropScreen.style'
-import CropBox, { boxState } from '@/components/imagery/CropBox'
-import InverseMask from '@/components/imagery/InverseMask'
-import PhotoOptions from '@/components/imagery/PhotoOptions'
-import useTheme from '@/hooks/useTheme'
-import { useImageManipulator } from 'expo-image-manipulator'
-import { router, useLocalSearchParams } from 'expo-router'
-import React, { useState } from 'react'
-import { Image, LayoutChangeEvent, LayoutRectangle, View } from 'react-native'
-import { imageryLocalParams } from '../../../assets/styles/screens/imagery/ImageryLocalParam'
+import { cropBoxFileStyle } from '@/assets/styles/components/app/CropScreen/CropBox.style';
+import { createCropScreenStyle } from '@/assets/styles/components/app/CropScreen/index.style';
+import { imageryLocalParams } from '@/assets/styles/imagery/ImageryLocalParam';
+import useTheme from '@/hooks/useTheme';
+import { useImageManipulator } from 'expo-image-manipulator';
+import React, { useState } from 'react';
+import { Image, LayoutChangeEvent, LayoutRectangle, View } from 'react-native';
+import PhotoOptions from '../../imagery/PhotoOptions';
+import CropBox, { boxState } from './CropBox';
+import InverseMask from './InverseMask';
 
 // Help with expo-image-manipulator:
 // https://docs.expo.dev/versions/latest/sdk/imagemanipulator/
 
-const CropScreen = () => {
-  const params = useLocalSearchParams<imageryLocalParams>();
+type CropScreenProps = {
+  params: imageryLocalParams,
+  onBackPressed?: (curParams: imageryLocalParams) => void,
+  onForwardPressed?: (curParams: imageryLocalParams) => void,
+};
+
+const CropScreen = ({params, onBackPressed, onForwardPressed}: CropScreenProps) => {
   const { picturePath, dWidth, dHeight, dX, dY } = params;
 
   const [layout, setLayout] = useState<LayoutRectangle>();
@@ -24,15 +28,13 @@ const CropScreen = () => {
 
   const context = useImageManipulator(picturePath);
 
-  const goBack = () => {
-    if (router.canGoBack()){
-      router.back();
-    } else {
-      router.replace("..");
-    }
+  const onBack = () => {
+    if (!onBackPressed) return;
+    onBackPressed(params);
   };
 
   const goForward = async () => {
+    if (!onForwardPressed) return;
     if (!layout){
       throw new Error(`layout is an unknown value (${layout})`)
     }
@@ -55,18 +57,10 @@ const CropScreen = () => {
     const render = await context.renderAsync();
     const result = await render.saveAsync();
     
-    router.push({
-      pathname: "./PrepromptScreen",
-      params: {
-        ...params,
-        dWidth: cropInfo.width,
-        dHeight: cropInfo.height,
-        dX: cropInfo.x,
-        dY: cropInfo.y,
-        picturePath: picturePath,
-        editedPicturePath: result.uri,
-      }
-    });
+    params.picturePath = picturePath;
+    params.editedPicturePath = result.uri;
+
+    onForwardPressed(params);
   };
 
   const theme = useTheme();
@@ -76,7 +70,7 @@ const CropScreen = () => {
     <PhotoOptions
       header='Crop Photo'
       text='Help the AI by cropping the taken photo to help focus on the problem.'
-      onPressBack={goBack}
+      onPressBack={onBack}
       onPressForward={goForward}
     >
       <View style={style.container} onLayout={onLayout}>

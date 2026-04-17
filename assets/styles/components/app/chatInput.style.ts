@@ -17,10 +17,11 @@ export const createChatInputStyle = (colors: ColorScheme) => {
     },
 
     textInputContainer: {
-      width: "70%",
+      width: "60%",
       height: "100%",
       overflow: "hidden",
       flexDirection: "row",
+      gap: 10,
     },
 
     textInput: {
@@ -31,7 +32,19 @@ export const createChatInputStyle = (colors: ColorScheme) => {
       fontWeight: "500",
     },
 
-    sendContainer: {
+    attachImageView: {
+      height: "100%",
+      aspectRatio: 1,
+      borderRadius: "50%",
+      overflow: "hidden",
+    },
+
+    attachButtonImage: {
+      width: "100%",
+      height: "100%",
+    },
+
+    centerContainer: {
       justifyContent: 'center', 
       alignItems: 'center',
     },

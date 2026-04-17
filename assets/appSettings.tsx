@@ -1,29 +1,31 @@
 // Json's bitch ass won't let me use comments, so I'm using tsx.
 
 export default {
-    device: {
-        // Ram needed to generate a message and 6 gigabytes seems to be the bare-minimum.
-        minDeviceFreeBytesRAM: 6 * Math.pow(10, 9)
-    },
+  device: {
+    // Ram needed to generate a message and 6 gigabytes seems to be the bare-minimum.
+    minDeviceFreeBytesRAM: 6 * Math.pow(10, 9)
+  },
 
-    text: {},
+  text: {
+    attachmentLimit: 5,
+  },
 
-    imagery: {},
+  imagery: {},
 
-    settings: {},
+  settings: {},
 
-    ai: {
-        text_n_perdict: 1024,
-        imagery_n_predict: 1024,
+  ai: {
+    text_n_perdict: 1024,
+    imagery_n_predict: 1024,
 
-        universalCompletionMessage: [
-            {
-                role: "system",
-                content: "You are an AI assistant talking to the user."
-            },
-            {
-                role: "system",
-                content: `
+    universalCompletionMessage: [
+      {
+        role: "system",
+        content: "You are an AI assistant talking to the user."
+      },
+      {
+        role: "system",
+        content: `
 Always solve the problems using the following structure:
 
 1. Restate the problem in one sentence.
@@ -41,32 +43,32 @@ Rules:
 - Do NOT explain concepts unless asked.
 - Keep the solution concise and structured.
 - If the user has no problem, then you may have a normal conversation.
-                `
-            },
-        ],
+        `
+      },
+    ],
 
-        textCompletionMessage: [
-            {
-                role: "system",
-                content: `Do not interpret or reference images. Respond using text only.`,
-            },
-        ],
+    textCompletionMessage: [
+      {
+        role: "system",
+        content: `Do not interpret or reference images. Respond using text only.`,
+      },
+    ],
 
-        imageCompletionMessage: [
-            {
-                role: "system",
-                content: `You have vision capabilities. You can analyze and describe images when provided.`,
-            },
-        ],
+    imageCompletionMessage: [
+      {
+        role: "system",
+        content: `You have vision capabilities. You can analyze and describe images when provided.`,
+      },
+    ],
 
-        stopWords: ['</s>', '<|im_end|>'],
+    stopWords: ['</s>', '<|im_end|>'],
 
-        // DO NOT EDIT SETTINGS BELOW, UNLESS YOU KNOW WHAT YOU'RE DOING:
-        fullyDownloadedAiModelAsyncKey: "_fullyDownloadedAiModel",
-        fullyDownloadedMMProjAsyncKey: "_fullyDownloadedMMProj",
-    },
+    // DO NOT EDIT SETTINGS BELOW, UNLESS YOU KNOW WHAT YOU'RE DOING:
+    fullyDownloadedAiModelAsyncKey: "_fullyDownloadedAiModel",
+    fullyDownloadedMMProjAsyncKey: "_fullyDownloadedMMProj",
+  },
 
-    developer: {
-        debugPrint: false
-    }
+  developer: {
+    debugPrint: false
+  }
 }

@@ -1,11 +1,11 @@
-import { createLoadingResponseScreenStyle } from '@/assets/styles/screens/imagery/LoadingResponseScreen.style';
+import { createLoadingResponseScreenStyle } from '@/assets/styles/imagery/LoadingResponseScreen.style';
 import AiService from '@/components/ai/AiService';
 import useTheme from '@/hooks/useTheme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Image, ScrollView, Text, View } from 'react-native';
-import { imageryLocalParams } from '../../../assets/styles/screens/imagery/ImageryLocalParam';
+import { imageryLocalParams } from '@/assets/styles/imagery/ImageryLocalParam';
 
 const loadingTextInitState = "GENERATING.";
 

@@ -3,7 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import SinglePhotoOption from './SinglePhotoOption';
+import SinglePhotoOption from '../screens/CropScreen/SinglePhotoOption';
 
 type PhotoOptionsProps = {
   style?: StyleProp<ViewStyle>

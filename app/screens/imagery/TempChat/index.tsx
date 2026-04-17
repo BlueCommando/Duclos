@@ -1,11 +1,10 @@
-import { imageryLocalParams } from '@/assets/styles/screens/imagery/ImageryLocalParam';
+import { imageryLocalParams } from '@/assets/styles/imagery/ImageryLocalParam';
 import AiService from '@/components/ai/AiService';
 import { Chat, ChatRef } from '@/components/app/Chat';
 import ChatInput from '@/components/app/ChatInput';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, View } from 'react-native';
-import RNFS from 'react-native-fs';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const TempChat = () => {

@@ -1,10 +1,10 @@
-import { createPromptScreenStyle } from '@/assets/styles/screens/imagery/PrepromptScreen.style';
+import { createPromptScreenStyle } from '@/assets/styles/imagery/PrepromptScreen.style';
 import PhotoOptions from '@/components/imagery/PhotoOptions';
 import useTheme from '@/hooks/useTheme';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import { TextInput } from 'react-native';
-import { imageryLocalParams } from '../../../assets/styles/screens/imagery/ImageryLocalParam';
+import { imageryLocalParams } from '@/assets/styles/imagery/ImageryLocalParam';
 
 const PrepromptScreen = () => {
   const params = useLocalSearchParams<imageryLocalParams>();

@@ -17,7 +17,7 @@ const imagery = () => {
     const picture = await camera.current?.takePhoto({ enableShutterSound: true, });
     
     router.push({
-      pathname: "../screens/imagery/CropScreen",
+      pathname: "../screens/imagery/CropScreenImagery",
       params: {picturePath: `file://${picture?.path}`}
     })
   };
