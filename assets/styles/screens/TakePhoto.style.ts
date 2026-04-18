@@ -3,6 +3,11 @@ import { StyleSheet } from "react-native";
 
 export const createTakePhotoStyle = (colors: ColorScheme) => {
   const styleSheet = StyleSheet.create({
+    safeContainer: {
+      flex: 1,
+      backgroundColor: colors.subBackground,
+    },
+
     container: {
       flex: 1,
     },

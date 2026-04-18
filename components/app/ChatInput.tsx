@@ -130,8 +130,7 @@ const ChatAttach = ({attachmentCount, onAttach}: ChatAttackProps) => {
       onPress: () => {
         if (!onAttach) return;
 
-        router.push("/screens/TakePhoto")
-        console.log("now thats tuff2")
+        router.push("/screens/TakePhotoChat")
       },
     },
   ];
