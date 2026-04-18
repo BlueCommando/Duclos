@@ -1,6 +1,6 @@
-import { cropBoxFileStyle } from '@/assets/styles/components/app/CropScreen/CropBox.style';
-import { createCropScreenStyle } from '@/assets/styles/components/app/CropScreen/index.style';
 import { imageryLocalParams } from '@/assets/styles/imagery/ImageryLocalParam';
+import { cropBoxFileStyle } from '@/assets/styles/screens/CropScreen/CropBox.style';
+import { createCropScreenStyle } from '@/assets/styles/screens/CropScreen/index.style';
 import useTheme from '@/hooks/useTheme';
 import { useImageManipulator } from 'expo-image-manipulator';
 import React, { useState } from 'react';

@@ -1,4 +1,4 @@
-import { createIntroTextStyle } from '@/assets/styles/loadingScreen/IntroText.style'
+import { createIntroTextStyle } from '@/assets/styles/screens/loadingScreen/IntroText.style'
 import useTheme from '@/hooks/useTheme'
 import React, { useEffect, useRef, useState } from 'react'
 import { Animated, Dimensions } from 'react-native'

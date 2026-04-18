@@ -1,6 +1,7 @@
 import appSettings from '@/assets/appSettings';
 import { createChatInputStyle } from '@/assets/styles/components/app/chatInput.style';
 import useTheme from '@/hooks/useTheme';
+import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Image, LayoutChangeEvent, TextInput, TouchableOpacity, View } from 'react-native';
 import ContextMenu, { ContextMenuAction } from "react-native-context-menu-view";
@@ -129,7 +130,7 @@ const ChatAttach = ({attachmentCount, onAttach}: ChatAttackProps) => {
       onPress: () => {
         if (!onAttach) return;
 
-
+        router.push("/screens/TakePhoto")
         console.log("now thats tuff2")
       },
     },
