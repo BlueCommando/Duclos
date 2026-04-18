@@ -288,7 +288,7 @@ class AiService{
     /** 
      * Converts a image to base64, making it easier to give AI images.
     */
-    async imageToBase64(requiredFile: string): Promise<string> {
+    async imageToBase64(requiredFile: string, removePrefix?: boolean): Promise<string> {
       const asset = Asset.fromModule(requiredFile); 
       await asset.downloadAsync();
 
@@ -296,7 +296,7 @@ class AiService{
       const base64 = await file.base64();
       const ext = file.extension.slice(1);
 
-      return `data:image/${ext};base64,${base64}`;
+      return !removePrefix && `data:image/${ext};base64,${base64}` || base64;
     }
 
     async cleanUp(){

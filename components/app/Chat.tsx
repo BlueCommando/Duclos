@@ -1,4 +1,5 @@
 import { createChatStyle } from '@/assets/styles/components/app/chat.style';
+import generateUniqueString from '@/components/other/GenerateUniqueString';
 import useTheme from '@/hooks/useTheme';
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -92,10 +93,9 @@ const imageContextButtons: infoContextButtonFormat[] = [
       }
 
       // Base64 to JPG:
-      const base64 = e.message.content.replace(/^data:image\/\w+;base64,/, "");
       const path = `${RNFS.CachesDirectoryPath}/${Date.now()}.jpg`;
 
-      await RNFS.writeFile(path, base64, "base64");
+      await RNFS.writeFile(path, e.message.content, "base64");
 
       // Save:
       await CameraRoll.saveAsset(path, { type: "photo" });
@@ -105,17 +105,6 @@ const imageContextButtons: infoContextButtonFormat[] = [
     }
   },
 ];
-
-const genUniqueStr = (digits: number) =>  {
-    const str = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVXZ';
-    const uuid = [];
-
-    for (let i = 0; i < digits; i++) {
-        uuid.push(str[Math.floor(Math.random() * str.length)]);
-    }
-
-    return uuid.join('');
-};
 
 const inlineStyle = `
 html, body {
@@ -178,7 +167,7 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         };
 
         if (context.image.type === "uri" || context.image.type === "require"){
-          imageText.content = await aiService.imageToBase64(context.image.content);
+          imageText.content = await aiService.imageToBase64(context.image.content, true);
         }
         if (context.image.type === "base64"){
           imageText.content = context.image.content;
@@ -218,7 +207,7 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           return (
             <Bubble 
               message={v}
-              key={genUniqueStr(8)}
+              key={generateUniqueString(8)}
             />
           )
         })}
@@ -226,7 +215,7 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
         {loadingMessage && (
           <Bubble 
             message={{type: "loading", role: "receiver", content: "NULL", time: Date.now(),}}
-            key={genUniqueStr(8)}
+            key={generateUniqueString(8)}
           />
         )}
       </View>
@@ -338,13 +327,13 @@ const Bubble = ({message}: BubbleProps) => {
             ? <View style={stylesheet.textView}>
                 {texts.map((v) => {
                   if (v.type === "markdown"){
-                    return <Markdown key={genUniqueStr(8)}>
+                    return <Markdown key={generateUniqueString(8)}>
                       {v.content}
                     </Markdown>;
                   }
 
                   if (v.type === "katex"){
-                    return <View key={genUniqueStr(8)} style={stylesheet.katexView}>
+                    return <View key={generateUniqueString(8)} style={stylesheet.katexView}>
                       <Katex 
                         style={stylesheet.katex}
                         expression={v.content}

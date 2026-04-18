@@ -1,13 +1,20 @@
 import appSettings from '@/assets/appSettings';
 import { createChatInputStyle } from '@/assets/styles/components/app/chatInput.style';
+import { imageryLocalParams } from '@/assets/styles/imagery/ImageryLocalParam';
+import generateUniqueString from '@/components/other/GenerateUniqueString';
 import useTheme from '@/hooks/useTheme';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, LayoutChangeEvent, TextInput, TouchableOpacity, View } from 'react-native';
 import ContextMenu, { ContextMenuAction } from "react-native-context-menu-view";
 import { launchImageLibrary } from 'react-native-image-picker';
 import Toast from 'react-native-simple-toast';
+import { create } from "zustand";
+import AiService from '../ai/AiService';
 
+// Help with zustand:
+// https://zustand.docs.pmnd.rs/learn/getting-started/introduction#installation
+//
 // Help with react-native-simple-toast:
 // https://github.com/vonovak/react-native-simple-toast/blob/master/README.md
 //
@@ -16,6 +23,24 @@ import Toast from 'react-native-simple-toast';
 //
 // Help with react-native-context-menu-view:
 // https://github.com/mpiannucci/react-native-context-menu-view/blob/main/README.md
+
+// there might be a bug where the crop screen box can be bigger than the displayed image?
+
+export type chatInputImageryParams = imageryLocalParams & {id: string}
+
+type ImageryStore = {
+  imageryProps: chatInputImageryParams[];
+  addImagery: (params: chatInputImageryParams) => void;
+};
+
+export const useImageryStore = create<ImageryStore>(set => ({
+  imageryProps: [] as chatInputImageryParams[],
+
+  addImagery: (params: chatInputImageryParams) =>
+    set(state => ({
+      imageryProps: [...state.imageryProps, params],
+    })),
+}));
 
 export type ChatSentMessageExample = {
   text: string,
@@ -33,6 +58,8 @@ const ChatInput = ({text, onChangedText, onSend}: ChatInputProps) => {
   const stylesheet = createChatInputStyle(theme);
 
   const [chatSend, changeChatSend] = useState<ChatSentMessageExample>({text: "", images: [],})
+  const [uniqueId] = useState(generateUniqueString(8));
+
   const [borderRadius, setBorderRadius] = useState(0);
   const [height, setHeight] = useState(stylesheet.container.height);
 
@@ -45,6 +72,7 @@ const ChatInput = ({text, onChangedText, onSend}: ChatInputProps) => {
   return (
     <View style={[stylesheet.container, {height: height}]}>
       <ChatAttach
+        uniqueId={uniqueId}
         attachmentCount={chatSend.images.length}
         onAttach={(base64) => {
           changeChatSend(prev => ({
@@ -93,6 +121,7 @@ const ChatInput = ({text, onChangedText, onSend}: ChatInputProps) => {
 }
 
 type ChatAttackProps = {
+  uniqueId: string,
   attachmentCount: number,
   onAttach?: (base64: string) => void,
 };
@@ -101,7 +130,7 @@ type AttachOption = (ContextMenuAction & {
   onPress?: () => void
 });
 
-const ChatAttach = ({attachmentCount, onAttach}: ChatAttackProps) => {
+const ChatAttach = ({uniqueId, attachmentCount, onAttach}: ChatAttackProps) => {
   const theme = useTheme();
   const stylesheet = createChatInputStyle(theme);
 
@@ -130,10 +159,36 @@ const ChatAttach = ({attachmentCount, onAttach}: ChatAttackProps) => {
       onPress: () => {
         if (!onAttach) return;
 
-        router.push("/screens/TakePhotoChat")
+        // Will get photos in a useEffect.
+        router.push({
+          pathname: "/screens/TakePhotoChat",
+          params: {id: uniqueId},
+        })
       },
     },
   ];
+
+  // From Camera Continued:
+  const imageryProps = useImageryStore(state => state.imageryProps);
+
+  useEffect(() => {
+    if (!onAttach) return;
+
+    const run = async () => {
+      for (var i = 0; i < imageryProps.length; i++) {
+        const v = imageryProps[i];
+        if (v.id !== uniqueId) continue;
+        if (!v.editedPicturePath) continue;
+
+        const base64 = await AiService.imageToBase64(v.editedPicturePath, true);
+        onAttach(base64);
+
+        break;
+      }
+    };
+
+    run();
+  }, [imageryProps])
 
   return (
     <View style={stylesheet.centerContainer}>
