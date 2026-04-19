@@ -4,13 +4,11 @@ import { StyleSheet } from "react-native";
 export const createChatInputStyle = (colors: ColorScheme) => {
   const styles = StyleSheet.create({
     container: {
-      //flex: 1,
-      //position: 'absolute',
       flexDirection: "row",
       justifyContent: "center",
       width: "100%",
       height: 50,
-      maxHeight: 100,
+      maxHeight: 150,
       bottom: 0,
       gap: 10,
       marginVertical: 10,
@@ -18,10 +16,8 @@ export const createChatInputStyle = (colors: ColorScheme) => {
 
     textInputContainer: {
       width: "60%",
-      height: "100%",
       overflow: "hidden",
-      flexDirection: "row",
-      gap: 10,
+      borderRadius: 25,
     },
 
     textInput: {
@@ -32,16 +28,45 @@ export const createChatInputStyle = (colors: ColorScheme) => {
       fontWeight: "500",
     },
 
-    attachImageView: {
+    attachedImagesView: {
+      flexDirection: "row",
+      paddingBottom: 0,
+      padding: 5,
+      gap: 5,
+      width: "100%",
+      height: 50,
+      backgroundColor: colors.subBackground,
+    },
+
+    attachedImageContainer: {
       height: "100%",
+      aspectRatio: 1,
+    },
+
+    attachedImageView: {
+      flex: 1,
+      overflow: "hidden",
+      borderRadius: "50%",
+    },
+
+    attachedImage: {
+      flex: 1,
+    },
+
+    attachedImageDeleteButton: {
+      position: "absolute",
+      alignSelf: "flex-end",
+      width: "50%",
+      height: "50%",
+      backgroundColor: "#ffffff",
+    },
+
+    attachImageView: {
+      maxHeight: 50,
+      height: 50,
       aspectRatio: 1,
       borderRadius: "50%",
       overflow: "hidden",
-    },
-
-    attachButtonImage: {
-      width: "100%",
-      height: "100%",
     },
 
     centerContainer: {
@@ -50,7 +75,8 @@ export const createChatInputStyle = (colors: ColorScheme) => {
     },
 
     sendView: {
-      height: "100%",
+      maxHeight: 50,
+      height: 50,
       borderRadius: "50%",
       aspectRatio: 1,
       overflow: "hidden",

@@ -5,12 +5,12 @@ import generateUniqueString from '@/components/other/GenerateUniqueString';
 import useTheme from '@/hooks/useTheme';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Image, LayoutChangeEvent, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, TextInput, TouchableOpacity, View } from 'react-native';
 import ContextMenu, { ContextMenuAction } from "react-native-context-menu-view";
+import RNFS from 'react-native-fs';
 import { launchImageLibrary } from 'react-native-image-picker';
 import Toast from 'react-native-simple-toast';
 import { create } from "zustand";
-import AiService from '../ai/AiService';
 
 // Help with zustand:
 // https://zustand.docs.pmnd.rs/learn/getting-started/introduction#installation
@@ -44,7 +44,7 @@ export const useImageryStore = create<ImageryStore>(set => ({
 
 export type ChatSentMessageExample = {
   text: string,
-  images: string[],
+  imagePaths: string[],
 };
 
 type ChatInputProps = {
@@ -57,38 +57,76 @@ const ChatInput = ({text, onChangedText, onSend}: ChatInputProps) => {
   const theme = useTheme();
   const stylesheet = createChatInputStyle(theme);
 
-  const [chatSend, changeChatSend] = useState<ChatSentMessageExample>({text: "", images: [],})
+  const [chatSend, changeChatSend] = useState<ChatSentMessageExample>({text: "", imagePaths: [],})
   const [uniqueId] = useState(generateUniqueString(8));
 
   const [borderRadius, setBorderRadius] = useState(0);
-  const [height, setHeight] = useState(stylesheet.container.height);
+  const [textHeight, setTextHeight] = useState(stylesheet.container.height);
+  const [imageHeight, setImageHeight] = useState(0);
 
-  const onLayout = (e: LayoutChangeEvent) => {
-    setHeight(e.nativeEvent.layout.height);
+  const maxInputHeight = stylesheet.container.maxHeight;
 
-    if (borderRadius === 0) setBorderRadius(e.nativeEvent.layout.height / 2);
-  };
+  useEffect(() => {
+  if (chatSend.imagePaths.length === 0) {
+    setImageHeight(0);
+  }
+  }, [chatSend.imagePaths.length]);
 
   return (
-    <View style={[stylesheet.container, {height: height}]}>
+    <View style={[stylesheet.container, {height: Math.min(textHeight + imageHeight, maxInputHeight)}]}>
       <ChatAttach
         uniqueId={uniqueId}
-        attachmentCount={chatSend.images.length}
-        onAttach={(base64) => {
+        attachmentCount={chatSend.imagePaths.length}
+        onAttach={(imagePaths) => {
+          console.log(imagePaths)
           changeChatSend(prev => ({
             ...prev,
-            images: [
-              ...prev.images,
-              base64,
+            imagePaths: [
+              ...prev.imagePaths,
+              imagePaths,
             ]
           }));
         }}
       />
 
       <View 
-        onLayout={onLayout} 
-        style={[stylesheet.textInputContainer, {borderRadius: borderRadius}]}
+        style={stylesheet.textInputContainer} 
       >
+        {chatSend.imagePaths.length > 0 && 
+          (<View 
+            style={[stylesheet.attachedImagesView]}
+            onLayout={(e) => {
+              if (e.nativeEvent.layout.height + textHeight > maxInputHeight) return;
+              setImageHeight(e.nativeEvent.layout.height);
+            }}
+          >{
+            chatSend.imagePaths.map((v, i) => {
+              return <View 
+                key={generateUniqueString(8)} 
+                style={stylesheet.attachedImageContainer}
+              >
+                <View style={stylesheet.attachedImageView}>
+                  <Image style={stylesheet.attachedImage} source={{uri: v}}/>
+                </View>
+
+                <TouchableOpacity 
+                  style={stylesheet.attachedImageDeleteButton}
+                  onPress={
+                    () => changeChatSend(prev => ({
+                      ...prev,
+                      imagePaths: prev.imagePaths.filter((_, index) => index !== i)
+                    }))
+                  }
+                >
+                  <Image 
+                    style={stylesheet.image} 
+                    source={require("@/assets/app/PLACEHOLDER.png")}
+                  />
+                </TouchableOpacity>
+              </View>
+            })
+          }</View>)
+        }
 
         <TextInput
           style={stylesheet.textInput}
@@ -102,10 +140,8 @@ const ChatInput = ({text, onChangedText, onSend}: ChatInputProps) => {
             }));
           }}
           onContentSizeChange={(e) => {
-            const height = e.nativeEvent.contentSize.height;
-            const maxHeight = stylesheet.container.maxHeight;
-
-            setHeight(Math.min(height, maxHeight))
+            if (e.nativeEvent.contentSize.height + imageHeight > maxInputHeight) return;
+            setTextHeight(Math.max(e.nativeEvent.contentSize.height, stylesheet.container.height));
           }}
           multiline={true}
           placeholder="Click to type a Message to AI"
@@ -138,18 +174,15 @@ const ChatAttach = ({uniqueId, attachmentCount, onAttach}: ChatAttackProps) => {
 
     // From Gallery
     {
-      title: "Attach Image from Gallary",
+      title: "Attach Image from Gallery",
       onPress: async () => {
         if (!onAttach) return;
 
-        const photos = await launchImageLibrary({
-          mediaType: "photo",
-          includeBase64: true,
-        });
+        const photos = await launchImageLibrary({mediaType: "photo",});
 
         if (photos.didCancel || !photos.assets) return;
 
-        onAttach(photos.assets[0].base64 || "");
+        onAttach(photos.assets[0].uri || "");
       },
     },
 
@@ -180,8 +213,8 @@ const ChatAttach = ({uniqueId, attachmentCount, onAttach}: ChatAttackProps) => {
         if (v.id !== uniqueId) continue;
         if (!v.editedPicturePath) continue;
 
-        const base64 = await AiService.imageToBase64(v.editedPicturePath, true);
-        onAttach(base64);
+        RNFS.unlink(v.picturePath);
+        onAttach(v.editedPicturePath);
 
         break;
       }
@@ -192,7 +225,7 @@ const ChatAttach = ({uniqueId, attachmentCount, onAttach}: ChatAttackProps) => {
 
   return (
     <View style={stylesheet.centerContainer}>
-      <View style={[stylesheet.attachImageView, {height: stylesheet.container.height * 0.8}]}>
+      <View style={stylesheet.attachImageView}>
           <ContextMenu
             actions={attachOptions}
             dropdownMenuMode={true}
@@ -208,7 +241,7 @@ const ChatAttach = ({uniqueId, attachmentCount, onAttach}: ChatAttackProps) => {
             }}
           >
             <Image 
-              style={stylesheet.attachButtonImage} 
+              style={stylesheet.image} 
               source={require("@/assets/app/PLACEHOLDER.png")}
             />
           </ContextMenu>
@@ -227,12 +260,10 @@ const ChatSend = ({onPress}: ChatSendProps) => {
 
   return (
     <View style={stylesheet.centerContainer}>
-      <View style={{height: stylesheet.container.height * 0.8}}>
-        <View style={stylesheet.sendView}>
-          <TouchableOpacity style={stylesheet.sendTouchOpacity} onPress={onPress}>
-            <Image style={stylesheet.image} source={require("@/assets/app/PLACEHOLDER.png")}/>
-          </TouchableOpacity>
-        </View>
+      <View style={stylesheet.sendView}>
+        <TouchableOpacity style={stylesheet.sendTouchOpacity} onPress={onPress}>
+          <Image style={stylesheet.image} source={require("@/assets/app/PLACEHOLDER.png")}/>
+        </TouchableOpacity>
       </View>
     </View>
   )
