@@ -311,12 +311,12 @@ const Bubble = ({message}: BubbleProps) => {
   const dateClass = new Date(message.time);
   const unix = message.time / 1000;
 
-  const day = dateClass.getDay() + 1;
+  const day = dateClass.getDate();
   const month = dateClass.toLocaleString("default", { month: "short" });
   const year = dateClass.getFullYear();
   const hours = (dateClass.getHours() + 11) % 12 + 1;
   const minutes = String(Math.floor(unix / 60 % 60)).padStart(2, "0");
-  const AMPM = dateClass.getHours() - 11 < 12 ? 'PM' : 'AM';
+  const AMPM = dateClass.getHours() < 11 ? 'AM' : 'PM';
 
   return (
     <View style={stylesheet.bubbleView}>

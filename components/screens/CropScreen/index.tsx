@@ -48,19 +48,20 @@ const CropScreen = ({params, onBackPressed, onForwardPressed}: CropScreenProps) 
     const heightScalar = height / layout.height;
 
     context.crop({
-      width: cropInfo.width * widthScalar,
-      height: cropInfo.height * heightScalar,
-      originX: cropInfo.x * widthScalar,
-      originY: cropInfo.y * heightScalar,
+      width: Math.min(cropInfo.width * widthScalar, width),
+      height: Math.min(cropInfo.height * heightScalar, height),
+      originX: Math.min(cropInfo.x * widthScalar, cropInfo.width * widthScalar),
+      originY: Math.min(cropInfo.y * heightScalar, cropInfo.height * heightScalar),
     });
 
     const render = await context.renderAsync();
     const result = await render.saveAsync();
-    
-    params.picturePath = picturePath;
-    params.editedPicturePath = result.uri;
 
-    onForwardPressed(params);
+    onForwardPressed({
+      ...params,
+      picturePath: picturePath,
+      editedPicturePath: result.uri,
+    });
   };
 
   const theme = useTheme();

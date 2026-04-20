@@ -11,6 +11,7 @@ import RNFS from 'react-native-fs';
 import { launchImageLibrary } from 'react-native-image-picker';
 import Toast from 'react-native-simple-toast';
 import { create } from "zustand";
+import AiService from '../ai/AiService';
 
 // Help with zustand:
 // https://zustand.docs.pmnd.rs/learn/getting-started/introduction#installation
@@ -24,9 +25,10 @@ import { create } from "zustand";
 // Help with react-native-context-menu-view:
 // https://github.com/mpiannucci/react-native-context-menu-view/blob/main/README.md
 
-// there might be a bug where the crop screen box can be bigger than the displayed image?
-
-export type chatInputImageryParams = imageryLocalParams & {id: string}
+export type chatInputImageryParams = imageryLocalParams & {
+  id: string, 
+  displayed: "true" | "false"
+}
 
 type ImageryStore = {
   imageryProps: chatInputImageryParams[];
@@ -44,46 +46,44 @@ export const useImageryStore = create<ImageryStore>(set => ({
 
 export type ChatSentMessageExample = {
   text: string,
-  imagePaths: string[],
+  images: string[],
 };
 
 type ChatInputProps = {
   text?: string,
   onChangedText?: (text: string) => void,
-  onSend?: (sent: ChatSentMessageExample | undefined) => void,
+  onSend?: (message: ChatSentMessageExample) => void,
 };
 
 const ChatInput = ({text, onChangedText, onSend}: ChatInputProps) => {
   const theme = useTheme();
   const stylesheet = createChatInputStyle(theme);
 
-  const [chatSend, changeChatSend] = useState<ChatSentMessageExample>({text: "", imagePaths: [],})
+  const [chatSend, changeChatSend] = useState<ChatSentMessageExample>({text: "", images: [],})
   const [uniqueId] = useState(generateUniqueString(8));
 
-  const [borderRadius, setBorderRadius] = useState(0);
   const [textHeight, setTextHeight] = useState(stylesheet.container.height);
   const [imageHeight, setImageHeight] = useState(0);
 
   const maxInputHeight = stylesheet.container.maxHeight;
 
   useEffect(() => {
-  if (chatSend.imagePaths.length === 0) {
+  if (chatSend.images.length === 0) {
     setImageHeight(0);
   }
-  }, [chatSend.imagePaths.length]);
+  }, [chatSend.images.length]);
 
   return (
     <View style={[stylesheet.container, {height: Math.min(textHeight + imageHeight, maxInputHeight)}]}>
       <ChatAttach
         uniqueId={uniqueId}
-        attachmentCount={chatSend.imagePaths.length}
-        onAttach={(imagePaths) => {
-          console.log(imagePaths)
+        attachmentCount={chatSend.images.length}
+        onAttach={(imgBase64) => {
           changeChatSend(prev => ({
             ...prev,
-            imagePaths: [
-              ...prev.imagePaths,
-              imagePaths,
+            images: [
+              ...prev.images,
+              imgBase64,
             ]
           }));
         }}
@@ -92,7 +92,7 @@ const ChatInput = ({text, onChangedText, onSend}: ChatInputProps) => {
       <View 
         style={stylesheet.textInputContainer} 
       >
-        {chatSend.imagePaths.length > 0 && 
+        {chatSend.images.length > 0 && 
           (<View 
             style={[stylesheet.attachedImagesView]}
             onLayout={(e) => {
@@ -100,7 +100,7 @@ const ChatInput = ({text, onChangedText, onSend}: ChatInputProps) => {
               setImageHeight(e.nativeEvent.layout.height);
             }}
           >{
-            chatSend.imagePaths.map((v, i) => {
+            chatSend.images.map((v, i) => {
               return <View 
                 key={generateUniqueString(8)} 
                 style={stylesheet.attachedImageContainer}
@@ -114,7 +114,7 @@ const ChatInput = ({text, onChangedText, onSend}: ChatInputProps) => {
                   onPress={
                     () => changeChatSend(prev => ({
                       ...prev,
-                      imagePaths: prev.imagePaths.filter((_, index) => index !== i)
+                      images: prev.images.filter((_, index) => index !== i)
                     }))
                   }
                 >
@@ -150,7 +150,16 @@ const ChatInput = ({text, onChangedText, onSend}: ChatInputProps) => {
 
       <ChatSend onPress={() => {
         if (!onSend) return;
-        onSend(chatSend);
+        if (chatSend.text.trim() === "" && chatSend.images.length === 0) return;
+        
+        const finalMessage = {
+          text: chatSend.text.trim(),
+          images: chatSend.images,
+        };
+
+        onSend(finalMessage);
+
+        changeChatSend({text: "", images: []});
       }}/>
     </View>
   )
@@ -178,11 +187,16 @@ const ChatAttach = ({uniqueId, attachmentCount, onAttach}: ChatAttackProps) => {
       onPress: async () => {
         if (!onAttach) return;
 
-        const photos = await launchImageLibrary({mediaType: "photo",});
+        const photos = await launchImageLibrary({
+          mediaType: "photo",
+          includeBase64: true,
+        });
 
         if (photos.didCancel || !photos.assets) return;
 
-        onAttach(photos.assets[0].uri || "");
+        const pic = photos.assets[0];
+        const base64 = await AiService.addImageBase64Prefix(pic.type || "", pic.base64 || "");
+        onAttach(base64);
       },
     },
 
@@ -195,7 +209,7 @@ const ChatAttach = ({uniqueId, attachmentCount, onAttach}: ChatAttackProps) => {
         // Will get photos in a useEffect.
         router.push({
           pathname: "/screens/TakePhotoChat",
-          params: {id: uniqueId},
+          params: {id: uniqueId, displayed: "false"},
         })
       },
     },
@@ -210,11 +224,17 @@ const ChatAttach = ({uniqueId, attachmentCount, onAttach}: ChatAttackProps) => {
     const run = async () => {
       for (var i = 0; i < imageryProps.length; i++) {
         const v = imageryProps[i];
+        if (v.displayed === "true") continue;
         if (v.id !== uniqueId) continue;
         if (!v.editedPicturePath) continue;
 
+        v.displayed = "true";
+
+        const base64 = await AiService.imageToBase64(v.editedPicturePath);
+
+        onAttach(base64);
         RNFS.unlink(v.picturePath);
-        onAttach(v.editedPicturePath);
+        RNFS.unlink(v.editedPicturePath);
 
         break;
       }

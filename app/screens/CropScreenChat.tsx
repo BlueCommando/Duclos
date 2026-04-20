@@ -1,5 +1,4 @@
-import { imageryLocalParams } from '@/assets/styles/imagery/ImageryLocalParam';
-import { useImageryStore, chatInputImageryParams } from '@/components/app/ChatInput';
+import { chatInputImageryParams, useImageryStore } from '@/components/app/ChatInput';
 import CropScreen from '@/components/screens/CropScreen';
 import { router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
