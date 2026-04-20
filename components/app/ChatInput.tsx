@@ -4,7 +4,7 @@ import { imageryLocalParams } from '@/assets/styles/imagery/ImageryLocalParam';
 import generateUniqueString from '@/components/other/GenerateUniqueString';
 import useTheme from '@/hooks/useTheme';
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { Image, TextInput, TouchableOpacity, View } from 'react-native';
 import ContextMenu, { ContextMenuAction } from "react-native-context-menu-view";
 import RNFS from 'react-native-fs';
@@ -49,28 +49,78 @@ export type ChatSentMessageExample = {
   images: string[],
 };
 
+export type ChatInputRef = {
+  genAisResponse: () => Promise<string>,
+  canSendMessages: (state: boolean) => void,
+};
+
 type ChatInputProps = {
   text?: string,
   onChangedText?: (text: string) => void,
   onSend?: (message: ChatSentMessageExample) => void,
 };
 
-const ChatInput = ({text, onChangedText, onSend}: ChatInputProps) => {
+const ChatInput = forwardRef<ChatInputRef, ChatInputProps>((props, ref) => {
+  const {text, onChangedText, onSend} = props;
+
   const theme = useTheme();
   const stylesheet = createChatInputStyle(theme);
 
+  const [localText, changeLocalText] = useState(text || "");
   const [chatSend, changeChatSend] = useState<ChatSentMessageExample>({text: "", images: [],})
   const [uniqueId] = useState(generateUniqueString(8));
+  const [canSend, changeCanSend] = useState(true);
 
   const [textHeight, setTextHeight] = useState(stylesheet.container.height);
   const [imageHeight, setImageHeight] = useState(0);
 
   const maxInputHeight = stylesheet.container.maxHeight;
 
-  useEffect(() => {
-  if (chatSend.images.length === 0) {
-    setImageHeight(0);
+  const genAisResponse = async () => {
+    const images = [];
+
+    for (var i = 0; i < chatSend.images.length; i++) {
+      const base64 = await AiService.imageToBase64(chatSend.images[i])
+
+      images.push({
+        type: "image_url",
+        image_url: {
+          url: base64,
+        },
+      })
+    }
+
+    const response = await AiService.imageCompletion({
+      messages: [
+        {
+          role: "user",
+          content: [
+            ...(
+              chatSend.text.trim() !== "" && [{
+                type: "text",
+                text: chatSend.text,
+              }] || []
+            ),
+            ...images,
+          ],
+        }
+      ],
+    });
+
+    return response.text;
   }
+
+  useImperativeHandle(ref, () => ({
+    genAisResponse: genAisResponse,
+    canSendMessages: changeCanSend,
+  }));
+
+  useEffect(() => {
+    if (chatSend.images.length === 0) {
+      setImageHeight(0);
+    } else {
+      setImageHeight(stylesheet.attachedImagesView.height);
+    }
   }, [chatSend.images.length]);
 
   return (
@@ -78,12 +128,12 @@ const ChatInput = ({text, onChangedText, onSend}: ChatInputProps) => {
       <ChatAttach
         uniqueId={uniqueId}
         attachmentCount={chatSend.images.length}
-        onAttach={(imgBase64) => {
+        onAttach={(filePath) => {
           changeChatSend(prev => ({
             ...prev,
             images: [
               ...prev.images,
-              imgBase64,
+              filePath,
             ]
           }));
         }}
@@ -95,14 +145,10 @@ const ChatInput = ({text, onChangedText, onSend}: ChatInputProps) => {
         {chatSend.images.length > 0 && 
           (<View 
             style={[stylesheet.attachedImagesView]}
-            onLayout={(e) => {
-              if (e.nativeEvent.layout.height + textHeight > maxInputHeight) return;
-              setImageHeight(e.nativeEvent.layout.height);
-            }}
           >{
             chatSend.images.map((v, i) => {
               return <View 
-                key={generateUniqueString(8)} 
+                key={i} 
                 style={stylesheet.attachedImageContainer}
               >
                 <View style={stylesheet.attachedImageView}>
@@ -130,9 +176,10 @@ const ChatInput = ({text, onChangedText, onSend}: ChatInputProps) => {
 
         <TextInput
           style={stylesheet.textInput}
-          value={text}
+          value={localText}
           onChangeText={(t) => {
             if (onChangedText) onChangedText(t);
+            changeLocalText(t);
 
             changeChatSend(prev => ({
               ...prev,
@@ -150,6 +197,7 @@ const ChatInput = ({text, onChangedText, onSend}: ChatInputProps) => {
 
       <ChatSend onPress={() => {
         if (!onSend) return;
+        if (!canSend) return;
         if (chatSend.text.trim() === "" && chatSend.images.length === 0) return;
         
         const finalMessage = {
@@ -159,16 +207,17 @@ const ChatInput = ({text, onChangedText, onSend}: ChatInputProps) => {
 
         onSend(finalMessage);
 
+        changeLocalText("");
         changeChatSend({text: "", images: []});
       }}/>
     </View>
   )
-}
+})
 
 type ChatAttackProps = {
   uniqueId: string,
   attachmentCount: number,
-  onAttach?: (base64: string) => void,
+  onAttach?: (filePath: string) => void,
 };
 
 type AttachOption = (ContextMenuAction & {
@@ -195,8 +244,8 @@ const ChatAttach = ({uniqueId, attachmentCount, onAttach}: ChatAttackProps) => {
         if (photos.didCancel || !photos.assets) return;
 
         const pic = photos.assets[0];
-        const base64 = await AiService.addImageBase64Prefix(pic.type || "", pic.base64 || "");
-        onAttach(base64);
+
+        onAttach(pic.uri || "");
       },
     },
 
@@ -230,11 +279,8 @@ const ChatAttach = ({uniqueId, attachmentCount, onAttach}: ChatAttackProps) => {
 
         v.displayed = "true";
 
-        const base64 = await AiService.imageToBase64(v.editedPicturePath);
-
-        onAttach(base64);
+        onAttach(v.editedPicturePath);
         RNFS.unlink(v.picturePath);
-        RNFS.unlink(v.editedPicturePath);
 
         break;
       }
@@ -246,26 +292,26 @@ const ChatAttach = ({uniqueId, attachmentCount, onAttach}: ChatAttackProps) => {
   return (
     <View style={stylesheet.centerContainer}>
       <View style={stylesheet.attachImageView}>
-          <ContextMenu
-            actions={attachOptions}
-            dropdownMenuMode={true}
-            onPress={(e) => {
-              if (attachmentCount >= appSettings.text.attachmentLimit){
-                Toast.show(`Attachment Limit Reached! (${appSettings.text.attachmentLimit})`, 3000);
-                return;
-              }
+        <ContextMenu
+          actions={attachOptions}
+          dropdownMenuMode={true}
+          onPress={(e) => {
+            if (attachmentCount >= appSettings.text.attachmentLimit){
+              Toast.show(`Attachment Limit Reached! (${appSettings.text.attachmentLimit})`, 3000);
+              return;
+            }
 
-              const onPress = attachOptions[e.nativeEvent.index].onPress;
-              if (!onPress) return;
-              onPress();
-            }}
-          >
-            <Image 
-              style={stylesheet.image} 
-              source={require("@/assets/app/PLACEHOLDER.png")}
-            />
-          </ContextMenu>
-        </View>
+            const onPress = attachOptions[e.nativeEvent.index].onPress;
+            if (!onPress) return;
+            onPress();
+          }}
+        >
+          <Image 
+            style={stylesheet.image} 
+            source={require("@/assets/app/PLACEHOLDER.png")}
+          />
+        </ContextMenu>
+      </View>
     </View>
   )
 }

@@ -3,6 +3,10 @@ import { StyleSheet } from "react-native";
 
 export const createChatStyle = (colors: ColorScheme) => {
   const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+
     chatView: {
       flexDirection: "column",
       gap: 25,

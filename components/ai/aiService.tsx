@@ -300,18 +300,21 @@ class AiService{
     }
 
     /** 
-     * Gives Base64 image a prefix, so that react native and other libraries can read it.
+     * Gives a Base64 image with a prefix, so that react native and other libraries can read it.
      * 
      * for example:
      * 
-     * Turns {**BASE64**} to {data:**EXT**;base64,**BASE64**}
-     * 
-     * **EXT** should look like: "image/**FILE FORMAT**"
-     * 
-     * **BASE64** should look like a bunch of random characters with ='s at the end of the string.
+     * Turns {**BASE64**} to {data:image/jpg;base64,**BASE64**}
     */
-    async addImageBase64Prefix(ext: string, base64: string){
-      return `data:${ext};base64,${base64}`;
+    async addImageBase64Prefix(base64: string){
+      return `data:image/jpg;base64,${base64}`;
+    }
+
+    /** 
+     * Removes the Base64 prefix. (**addImageBase64Prefix** is the inverse of this.)
+    */
+    async removeImageBase64Prefix(base64: string){
+      return base64.split(",")[1];
     }
 
     async cleanUp(){

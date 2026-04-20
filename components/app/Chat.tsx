@@ -4,14 +4,16 @@ import useTheme from '@/hooks/useTheme';
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
 import Clipboard from '@react-native-clipboard/clipboard';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { Alert, Animated, Image, Platform, ScrollView, Text, View } from 'react-native';
+import { Alert, Animated, Image, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import ContextMenu, { ContextMenuAction } from "react-native-context-menu-view";
 import RNFS from 'react-native-fs';
 import Katex from 'react-native-katex';
 import Markdown from 'react-native-markdown-display';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-simple-toast';
 import aiService from '../ai/AiService';
 import hasAndroidPermission from '../other/HasAndroidPermission';
+import ChatInput, { ChatInputRef, ChatSentMessageExample } from './ChatInput';
 
 // Help with react-native-simple-toast:
 // https://github.com/vonovak/react-native-simple-toast/blob/master/README.md
@@ -92,14 +94,8 @@ const imageContextButtons: infoContextButtonFormat[] = [
         return;
       }
 
-      // Base64 to JPG:
-      const path = `${RNFS.CachesDirectoryPath}/${Date.now()}.jpg`;
-
-      await RNFS.writeFile(path, e.message.content, "base64");
-
       // Save:
-      await CameraRoll.saveAsset(path, { type: "photo" });
-      await RNFS.unlink(path);
+      await CameraRoll.saveAsset(e.message.content, { type: "photo" });
 
       Toast.show("Downloaded Image Successfully!", 3000);
     }
@@ -130,6 +126,7 @@ export type ChatRef = {
   createLoadingText: () => void,
   destroyLoadingText: () => void,
   getAllMessages: () => allMessagesFormat,
+  deleteAllImages: () => void,
 };
 
 type ChatProps = {
@@ -139,7 +136,9 @@ type ChatProps = {
 export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const [allMessages, changeAllMessages] = useState<allMessagesFormat>([]);
   const [loadingMessage, changeLoadingMessage] = useState(false);
-  
+
+  const scrollRef = useRef<ScrollView>(null);
+
   const createMessage = async (action: inputtedMessageFormat) => {
     const finalMessage: allMessagesFormat = [];
 
@@ -148,6 +147,7 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
 
       if (context.type === "text"){
         if (!context.text) continue;
+        if (context.text.trim() === "") continue;
 
         finalMessage.push({
           role: action.role,
@@ -166,11 +166,26 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           time: Date.now(),
         };
 
-        if (context.image.type === "uri" || context.image.type === "require"){
-          imageText.content = await aiService.imageToBase64(context.image.content, true);
-        }
-        if (context.image.type === "base64"){
+        if (context.image.type === "uri"){
           imageText.content = context.image.content;
+        }
+
+        if (context.image.type === "require"){
+          const base64 = await aiService.imageToBase64(context.image.content, true);
+          const path = `${RNFS.CachesDirectoryPath}/${generateUniqueString(8)}.jpg`;
+
+          await RNFS.writeFile(path, base64, "base64");
+
+          imageText.content = "file://" + path;
+        }
+
+        if (context.image.type === "base64"){
+          const path = `${RNFS.CachesDirectoryPath}/${generateUniqueString(8)}.jpg`;
+          const formatedBase64 = await aiService.removeImageBase64Prefix(context.image.content);
+
+          await RNFS.writeFile(path, formatedBase64, "base64");
+
+          imageText.content = "file://" + path;
         }
         
         finalMessage.push(imageText);
@@ -178,6 +193,14 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     }
 
     changeAllMessages(prev => [...prev, ...finalMessage]);
+  };
+
+  const deleteAllImages = async () => {
+    for (var i = 0; i < allMessages.length; i++) {
+      const v = allMessages[i];
+      if (v.type !== "image") continue;
+      await RNFS.unlink(v.content);
+    }
   };
 
   const createLoadingText = () => changeLoadingMessage(true);
@@ -190,36 +213,100 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     createLoadingText,
     destroyLoadingText,
     getAllMessages,
+    deleteAllImages,
   }));
 
-  const scrollRef = useRef<ScrollView>(null);
+  const chatInputRef = useRef<ChatInputRef>(null);
+
+  const onSend = async (message: ChatSentMessageExample) => {
+    if (!chatInputRef.current) return;
+
+    chatInputRef.current.canSendMessages(false);
+
+    // Users Input:
+    const userImages = [];
+
+    for (var i = 0; i < message.images.length; i++) {
+      userImages.push({
+        type: "image" as "image",
+        image: {
+          type: "uri" as "uri",
+          content: message.images[i]
+        },
+      })
+    }
+
+    createMessage({
+      role: "sender",
+      content: [
+        ...userImages,
+        {
+          type: "text",
+          text: message.text,
+        },
+      ]
+    });
+
+    setTimeout(() => createLoadingText(), 1000);
+
+    // Ai's response
+    const response = await chatInputRef.current.genAisResponse();
+
+    createMessage({
+      role: "receiver",
+      content: [
+        {
+          type: "text",
+          text: response,
+        }
+      ]
+    });
+
+    destroyLoadingText();
+
+    chatInputRef.current.canSendMessages(true);
+  }
 
   const theme = useTheme();
   const stylesheet = createChatStyle(theme);
 
   return (
-    <ScrollView
-      ref={scrollRef}
-      onLayout={ () => scrollRef.current?.scrollToEnd({ animated: true }) }
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : undefined} 
+      style={stylesheet.container}
     >
-      <View style={stylesheet.chatView}>
-        {allMessages.map((v) => {
-          return (
+      {/*Chat*/}
+      <ScrollView
+        ref={scrollRef}
+        onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
+      >
+        <View style={stylesheet.chatView}>
+          {allMessages.map((v) => {
+            return (
+              <Bubble 
+                message={v}
+                key={generateUniqueString(8)}
+              />
+            )
+          })}
+
+          {loadingMessage && (
             <Bubble 
-              message={v}
+              message={{type: "loading", role: "receiver", content: "NULL", time: Date.now(),}}
               key={generateUniqueString(8)}
             />
-          )
-        })}
+          )}
+        </View>
+      </ScrollView>
 
-        {loadingMessage && (
-          <Bubble 
-            message={{type: "loading", role: "receiver", content: "NULL", time: Date.now(),}}
-            key={generateUniqueString(8)}
-          />
-        )}
-      </View>
-    </ScrollView>
+      {/*Chat Input*/}
+      <SafeAreaView edges={["bottom"]}>
+        <ChatInput
+          ref={chatInputRef}
+          onSend={onSend}
+        />
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 })
 
@@ -316,7 +403,7 @@ const Bubble = ({message}: BubbleProps) => {
   const year = dateClass.getFullYear();
   const hours = (dateClass.getHours() + 11) % 12 + 1;
   const minutes = String(Math.floor(unix / 60 % 60)).padStart(2, "0");
-  const AMPM = dateClass.getHours() < 11 ? 'AM' : 'PM';
+  const AMPM = dateClass.getHours() < 12 ? 'AM' : 'PM';
 
   return (
     <View style={stylesheet.bubbleView}>
