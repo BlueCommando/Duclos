@@ -6,6 +6,7 @@ import { ImageSourcePropType, useColorScheme } from 'react-native';
 export interface ColorScheme {
   background: string,
   subBackground: string,
+  lowerBackground: string,
   border: string,
 
   textColor: string,
@@ -31,6 +32,7 @@ export interface ColorScheme {
 export const lightColors: ColorScheme = {
   background: "#eeeeee",
   subBackground: "#d3d3d3",
+  lowerBackground: "#acacac",
   border: "#D7D7D7",
   
   textColor: "#050505",
@@ -54,6 +56,7 @@ export const lightColors: ColorScheme = {
 export const darkColors: ColorScheme = {
   background: "#1e2433",
   subBackground: "#12161f",
+  lowerBackground: "#05060a",
   border: "#10141d",
 
   textColor: "#eeeeee",

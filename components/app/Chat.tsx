@@ -127,6 +127,7 @@ export type ChatRef = {
   createLoadingText: () => void,
   destroyLoadingText: () => void,
   getAllMessages: () => allMessagesFormat,
+  setAllMessages: (messages: allMessagesFormat) => void,
   deleteAllImages: () => void,
 };
 
@@ -208,12 +209,14 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const destroyLoadingText = () => changeLoadingMessage(false);
 
   const getAllMessages = () => allMessages;
+  const setAllMessages = (m: allMessagesFormat) => changeAllMessages(m);
 
   useImperativeHandle(ref, () => ({
     createMessage,
     createLoadingText,
     destroyLoadingText,
     getAllMessages,
+    setAllMessages,
     deleteAllImages,
   }));
 
@@ -301,7 +304,7 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       </ScrollView>
 
       {/*Chat Input*/}
-      <SafeAreaView edges={["bottom"]}>
+      <SafeAreaView style={stylesheet.chatInputSafeView} edges={["bottom"]}>
         <ChatInput
           ref={chatInputRef}
           onSend={onSend}

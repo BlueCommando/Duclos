@@ -7,6 +7,10 @@ export const createChatStyle = (colors: ColorScheme) => {
       flex: 1,
     },
 
+    chatInputSafeView: {
+      backgroundColor: colors.lowerBackground,
+    },
+
     chatView: {
       flexDirection: "column",
       gap: 25,

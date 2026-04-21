@@ -63,7 +63,7 @@ export const createChatInputStyle = (colors: ColorScheme) => {
 
     attachImageView: {
       maxHeight: 50,
-      height: 50,
+      height: "100%",
       aspectRatio: 1,
       borderRadius: "50%",
       overflow: "hidden",
@@ -76,7 +76,7 @@ export const createChatInputStyle = (colors: ColorScheme) => {
 
     sendView: {
       maxHeight: 50,
-      height: 50,
+      height: "100%",
       borderRadius: "50%",
       aspectRatio: 1,
       overflow: "hidden",
