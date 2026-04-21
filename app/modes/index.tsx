@@ -58,21 +58,7 @@ export default function Index() {
     console.log(await test(msg));
   }
 
-  const t = async ()=>router.replace({
-    pathname: "/screens/imagery/TempChat",
-    params: {
-      //picturePath = string,
-      editedPicturePath: await AiService.imageToBase64(require("@/assets/app/PLACEHOLDER.png")),
-      prompt: "What kind of mango is this?",
-      aiResponse: "This is phonk edit mango.",
-      aiResponseTimeUnix: 0.1,
-      dWidth: 100,
-      dHeight: 100,
-      dX: 0,
-      dY: 0,
-    },
-  })
-  useFocusEffect(() => t)
+  //useFocusEffect(() => router.replace({pathname: "/screens/imagery/TestChat",}))
 
   return (
     <SafeAreaView>

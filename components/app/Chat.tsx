@@ -47,6 +47,7 @@ type inputtedMessageFormat = {
   role: "sender" | "receiver",
   content: {
     type: "text" | "image",
+    time?: number,
     text?: string,
     image?: {
       type?: "uri" | "require" | "base64",
@@ -153,7 +154,7 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           role: action.role,
           type: context.type,
           content: context.text,
-          time: Date.now(),
+          time: context.time || Date.now(),
         });
 
       } else if (context.type === "image") {
@@ -163,7 +164,7 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
           role: action.role,
           type: context.type,
           content: "",
-          time: Date.now(),
+          time: context.time || Date.now(),
         };
 
         if (context.image.type === "uri"){

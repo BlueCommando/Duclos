@@ -48,10 +48,10 @@ const CropScreen = ({params, onBackPressed, onForwardPressed}: CropScreenProps) 
     const heightScalar = height / layout.height;
 
     context.crop({
-      width: Math.min(cropInfo.width * widthScalar, width),
-      height: Math.min(cropInfo.height * heightScalar, height),
-      originX: Math.min(cropInfo.x * widthScalar, cropInfo.width * widthScalar),
-      originY: Math.min(cropInfo.y * heightScalar, cropInfo.height * heightScalar),
+      width: Math.max(0, Math.min(cropInfo.width * widthScalar, width)),
+      height: Math.max(0, Math.min(cropInfo.height * heightScalar, height)),
+      originX: Math.max(0, Math.min(cropInfo.x * widthScalar, width - cropInfo.width * widthScalar)),
+      originY: Math.max(0, Math.min(cropInfo.y * heightScalar, height - cropInfo.height * heightScalar)),
     });
 
     const render = await context.renderAsync();
@@ -83,7 +83,7 @@ const CropScreen = ({params, onBackPressed, onForwardPressed}: CropScreenProps) 
           width={dWidth && parseFloat(dWidth) || "75%"} 
           height={dHeight && parseFloat(dHeight) || "75%"} 
           x={dX && parseFloat(dX) || "12.5%"} 
-          y={dY && parseFloat(dY) ||"12.5%"} 
+          y={dY && parseFloat(dY) || "12.5%"} 
           parentLayout={layout} 
           onBoxStateChanged={updateCropInfo}
         />

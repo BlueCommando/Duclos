@@ -157,12 +157,14 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>((props, ref) => {
 
                 <TouchableOpacity 
                   style={stylesheet.attachedImageDeleteButton}
-                  onPress={
-                    () => changeChatSend(prev => ({
+                  onPress={() => {
+                    changeChatSend(prev => ({
                       ...prev,
                       images: prev.images.filter((_, index) => index !== i)
-                    }))
-                  }
+                    }));
+
+                    RNFS.unlink(v);
+                  }}
                 >
                   <Image 
                     style={stylesheet.image} 
@@ -238,14 +240,17 @@ const ChatAttach = ({uniqueId, attachmentCount, onAttach}: ChatAttackProps) => {
 
         const photos = await launchImageLibrary({
           mediaType: "photo",
+          selectionLimit: appSettings.text.attachmentLimit - attachmentCount,
           includeBase64: true,
         });
 
         if (photos.didCancel || !photos.assets) return;
 
-        const pic = photos.assets[0];
-
-        onAttach(pic.uri || "");
+        for (var i = 0; i < photos.assets.length; i++) {
+          const v = photos.assets[i];
+          if (!v.uri) continue;
+          onAttach(v.uri || "");
+        }
       },
     },
 

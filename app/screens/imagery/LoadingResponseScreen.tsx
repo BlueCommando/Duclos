@@ -9,8 +9,6 @@ import { imageryLocalParams } from '@/assets/styles/imagery/ImageryLocalParam';
 
 const loadingTextInitState = "GENERATING.";
 
-const getUnixTime = () => Date.now() / 1000;
-
 const LoadingMessage = () => {
   const params = useLocalSearchParams<imageryLocalParams>();
   const { editedPicturePath, prompt } = params;
@@ -23,7 +21,7 @@ const LoadingMessage = () => {
 
   // Functionality
   const generateResponse = async () => {
-    const startTime = getUnixTime();
+    const startTime = Date.now();
 
     const pictureBase64 = await AiService.imageToBase64(editedPicturePath);
 
@@ -55,7 +53,7 @@ const LoadingMessage = () => {
       params: {
         ...params,
         aiResponse: response.text,
-        aiResponseTimeUnix: getUnixTime() - startTime,
+        aiResponseTimeUnix: Date.now() - startTime,
       },
     })
   };

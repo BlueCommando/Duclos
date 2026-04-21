@@ -4,6 +4,7 @@ export type imageryLocalParams = {
   editedPicturePath?: string,
   prompt?: string,
   aiResponse?: string,
+  /**In Milliseconds.*/
   aiResponseTimeUnix?: string,
   dWidth?: string,
   dHeight?: string,
