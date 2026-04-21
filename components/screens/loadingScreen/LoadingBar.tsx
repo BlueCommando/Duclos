@@ -1,4 +1,4 @@
-import { createLoadingBarStyle } from '@/assets/styles/loadingScreen/LoadingBar.style';
+import { createLoadingBarStyle } from '@/assets/styles/screens/loadingScreen/LoadingBar.style';
 import useTheme from '@/hooks/useTheme';
 import React from 'react';
 import { Text, View } from 'react-native';

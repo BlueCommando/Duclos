@@ -1,13 +1,11 @@
-import aiService from '@/components/ai/aiService';
+import AiService from '@/components/ai/AiService';
+import { router, useFocusEffect } from 'expo-router';
 import { useState } from 'react';
 import { Image, Text, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// finish loading screen
-
-
 const test = async (msg: string) => {
-  await aiService.init({
+  await AiService.init({
     downloadModel: res => {
       console.log("AI Model Download:", res.bytesWritten / res.contentLength)
     },
@@ -19,15 +17,21 @@ const test = async (msg: string) => {
     },
   });
 
-  const response = await aiService.imageCompletion({
+  const response = await AiService.textCompletion({
     messages: [
+      {
+        role: "user",
+        content: msg,
+      }
+
+      /*
       {
         role: "user",
         content: [
           {
             type: "image_url",
             image_url: {
-              url: await aiService.imageToBase64(require("@/assets/app/questions/q2.png")),
+              url: pathToQuestion,
             },
           }
         ],
@@ -36,6 +40,7 @@ const test = async (msg: string) => {
         role: "system",
         content: "Your job is to solve the problem from the given image."
       },
+      */
     ]
   })
 
@@ -52,6 +57,8 @@ export default function Index() {
     console.log(`${msg}\n\n`);
     console.log(await test(msg));
   }
+
+  //useFocusEffect(() => router.replace({pathname: "/screens/imagery/TestChat",}))
 
   return (
     <SafeAreaView>

@@ -3,10 +3,10 @@ import NetInfo from "@react-native-community/netinfo";
 import { Asset } from 'expo-asset';
 import { File } from 'expo-file-system';
 import { CompletionParams, initLlama, LlamaContext, NativeCompletionResult } from 'llama.rn';
-import { Alert, BackHandler } from 'react-native';
+import { Alert, BackHandler, ImageSourcePropType } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import RNFS, { DownloadProgressCallbackResult } from 'react-native-fs';
-import aiFileCheck from './aiFileCheck';
+import AiFileCheck from './AiFileCheck';
 
 // Help with llama.rn:
 // https://github.com/mybigday/llama.rn/blob/main/README.md
@@ -42,7 +42,7 @@ type deviceState = {
 }
 
 // AI Service:
-class aiService{
+class AiService{
     private context: LlamaContext | null = null;
 
     /** 
@@ -116,8 +116,8 @@ class aiService{
 
     private async downloadModel(progFuncs?: aiInitProgressFuncs){
       // Vars:
-      const downloadedAiModel = await aiFileCheck.fullyDownloadedAiModel();
-      const downloadedMMProj = await aiFileCheck.fullyDownloadedMMProj();
+      const downloadedAiModel = await AiFileCheck.fullyDownloadedAiModel();
+      const downloadedMMProj = await AiFileCheck.fullyDownloadedMMProj();
       const downloadedAllFiles = !downloadedAiModel || !downloadedMMProj;
 
       let deviceState: deviceState = await this.getDeviceState();
@@ -157,7 +157,7 @@ class aiService{
         });
 
         await promise;
-        await aiFileCheck.setDownloadedAiModel(true);
+        await AiFileCheck.setDownloadedAiModel(true);
         await updateDeviceState();
       }
       
@@ -192,7 +192,7 @@ class aiService{
         });
 
         await promise;
-        await aiFileCheck.setDownloadedMMProj(true);
+        await AiFileCheck.setDownloadedMMProj(true);
         await updateDeviceState();
       }
 
@@ -219,7 +219,7 @@ class aiService{
         model: aiModelDest,
         use_mlock: true,
         n_ctx: 4096,
-        n_gpu_layers: 99, // > 0: enable Metal on iOS,
+        n_gpu_layers: 99,
         ctx_shift: false,
       }, progFuncs?.initModel );
 
@@ -288,7 +288,7 @@ class aiService{
     /** 
      * Converts a image to base64, making it easier to give AI images.
     */
-    async imageToBase64(requiredFile: string): Promise<string> {
+    async imageToBase64(requiredFile: string, removePrefix?: boolean): Promise<string> {
       const asset = Asset.fromModule(requiredFile); 
       await asset.downloadAsync();
 
@@ -296,7 +296,25 @@ class aiService{
       const base64 = await file.base64();
       const ext = file.extension.slice(1);
 
-      return `data:image/${ext};base64,${base64}`;
+      return !removePrefix && `data:image/${ext};base64,${base64}` || base64;
+    }
+
+    /** 
+     * Gives a Base64 image with a prefix, so that react native and other libraries can read it.
+     * 
+     * for example:
+     * 
+     * Turns {**BASE64**} to {data:image/jpg;base64,**BASE64**}
+    */
+    async addImageBase64Prefix(base64: string){
+      return `data:image/jpg;base64,${base64}`;
+    }
+
+    /** 
+     * Removes the Base64 prefix. (**addImageBase64Prefix** is the inverse of this.)
+    */
+    async removeImageBase64Prefix(base64: string){
+      return base64.split(",")[1];
     }
 
     async cleanUp(){
@@ -305,4 +323,4 @@ class aiService{
     }
 };
 
-export default new aiService
+export default new AiService

@@ -1,8 +1,13 @@
 import { ColorScheme } from "@/hooks/useTheme";
 import { StyleSheet } from "react-native";
 
-export const createImageryStyle = (colors: ColorScheme) => {
+export const createTakePhotoStyle = (colors: ColorScheme) => {
   const styleSheet = StyleSheet.create({
+    safeContainer: {
+      flex: 1,
+      backgroundColor: colors.subBackground,
+    },
+
     container: {
       flex: 1,
     },

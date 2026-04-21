@@ -55,27 +55,6 @@ const modesLayout = () => {
       />
 
       <Tabs.Screen
-        name='advancedImagery'
-        options={{
-          tabBarLabel: ({ color }) => ( 
-            <Text style={{ 
-              color, 
-              textAlign: "center", 
-              flexWrap: "wrap", }} 
-            > Advanced Imagery </Text> 
-          ),
-          
-          tabBarIcon: ({size}) => (
-            <Image
-              source={require(placeholderImagePath)}
-              style={{ width: size, height: size }}
-            />
-          )
-        }
-      }
-      />
-
-      <Tabs.Screen
         name='settings'
         options={{
           title: "Settings",
