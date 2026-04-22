@@ -6,6 +6,10 @@ export default {
     minDeviceFreeBytesRAM: 6 * Math.pow(10, 9)
   },
 
+  user: {
+    userChatLogsAsyncKey: "_userChatLogs",
+  },
+
   text: {
     attachmentLimit: 5,
   },

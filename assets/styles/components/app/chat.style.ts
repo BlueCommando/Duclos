@@ -8,7 +8,7 @@ export const createChatStyle = (colors: ColorScheme) => {
     },
 
     chatInputSafeView: {
-      backgroundColor: colors.lowerBackground,
+      
     },
 
     chatView: {
