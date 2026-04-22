@@ -5,15 +5,17 @@ import hexToRgba from '@/components/other/HexToRGBA';
 import { chatLogs, getUsersChatLogs, log, saveUsersChatLogs } from '@/components/userData/UserChatLogs';
 import useTheme from '@/hooks/useTheme';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, TouchableOpacity, View, Image, Dimensions, Text } from "react-native";
+import { Animated, TouchableOpacity, View, Image, Dimensions, Text, Alert } from "react-native";
 import ContextMenu, { ContextMenuAction } from 'react-native-context-menu-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import RNFS from 'react-native-fs';
 
 export default function Index() {
   const chatRef = useRef<ChatRef>(null);
 
   const [showingChats, changeShowingChats] = useState(false);
   const [chatLogs, setChatLogs] = useState<chatLogs | null>(null);
+  const [currentChatId, changeCurrentChatId] = useState<number | null>(null);
 
   const theme = useTheme();
   const stylesheet = createChatModeStyle(theme);
@@ -24,28 +26,60 @@ export default function Index() {
   }
 
   const switchChat = (chatId: number) => {
-    
+    if (!chatLogs) return;
+    changeShowingChats(false);
+    changeCurrentChatId(chatId);
+    console.log(chatLogs)
+    chatRef.current?.setAllMessages((chatLogs)[chatId].logs);
   }
 
   const createNewChat = () => {
+    let newChatId = -1;
+
     setChatLogs(prev => {
       const newChatLogs = [...(prev || [])];
 
-      newChatLogs.push({
+      newChatId = newChatLogs.push({
         name: `Chat: #${newChatLogs.length + 1}`,
         logs: [],
       });
 
-      console.log(newChatLogs)
-
       saveUsersChatLogs(newChatLogs);
 
       return newChatLogs;
-    })
+    });
+
+    console.log(newChatId)
+    switchChat(newChatId);
   }
 
-  const deleteChat = () => {
+  const deleteChat = (chatId: number) => {
+    Alert.alert(
+      "Confirmation:", 
+      "Deleting a chat is irreversible. Are you sure?",
+      [
+        {
+          text: "YES", 
+          onPress: () => {
+            setChatLogs(prev => {
+              prev = prev || [];
+              const logs = prev[chatId].logs;
 
+              for (var i = 0; i < logs.length; i++) {
+                const v = logs[i];
+                if (v.type !== "image") continue;
+                RNFS.unlink(v.content);
+              }
+
+              const newChatLogs = prev.filter((_, i) => chatId !== i);
+              saveUsersChatLogs(newChatLogs);
+              return newChatLogs;
+            });
+        }},
+
+        {text: "NO"},
+      ]
+    )
   }
 
   // Get all of the Users Chats
@@ -53,6 +87,22 @@ export default function Index() {
     const a = async () => setChatLogs(await getUsersChatLogs());
     a();
   }, [])
+
+  // User Chat Options
+  const chatOptions = [
+    {
+      title: "Rename Chat",
+      onPress: (chatId: number) => {
+
+      },
+    },
+    {
+      title: "Delete Chat",
+      onPress: (chatId: number) => {
+        deleteChat(chatId);
+      },
+    },
+  ]
 
   // Animating Chats
   const screenWidth = Dimensions.get("window").width;
@@ -87,7 +137,7 @@ export default function Index() {
 
       <View style={[stylesheet.chooseChatContainer, chooseChatContainer]}>
         <Animated.View style={[stylesheet.allChatsView, {width: width}]}>
-          ({showingChats && 
+          {showingChats ? 
             <SafeAreaView style={[stylesheet.container, {gap: 10}]} edges={["top"]}>
               <TouchableOpacity style={stylesheet.chatOption} onPress={createNewChat}>
                 <View style={stylesheet.createChatButton}> 
@@ -103,18 +153,19 @@ export default function Index() {
                 chatLogs?.map((v, i) => {
                   return <ChatOption
                     name={v.name}
+                    chatId={i}
                     onPress={() => {
                       switchChat(i);
-                      console.log(showingChats)
                       changeShowingChats(false);
                     }}
+                    chatOptions={chatOptions}
                     key={genUniqueStr(8)}
                   />
                 })
               }
 
-            </SafeAreaView>
-          })
+            </SafeAreaView> : null
+          }
         </Animated.View>
 
         <SafeAreaView style={stylesheet.showAllChatsContainer} pointerEvents="box-none">
@@ -131,32 +182,35 @@ export default function Index() {
 
 type ChatOptionProps = {
   name: string,
-  attachOptions?: (ContextMenuAction & { onPress?: () => void })[],
+  chatId: number,
+  chatOptions: (ContextMenuAction & { onPress?: (chatId: number) => void })[],
   onPress?: () => void,
 }
 
-const ChatOption = ({name, attachOptions, onPress}: ChatOptionProps) => {
+const ChatOption = ({name, chatId, chatOptions, onPress}: ChatOptionProps) => {
   const theme = useTheme();
   const stylesheet = createChatModeStyle(theme);
 
   return (
     <View style={stylesheet.chatOption}>
       <TouchableOpacity style={stylesheet.chatOption} onPress={onPress}>
-        <ContextMenu 
-          style={stylesheet.createChatButton} 
-          actions={attachOptions}
-          dropdownMenuMode={true}
-          onPress={(e) => {
-            if (!attachOptions) return;
-            const onContextPress = attachOptions[e.nativeEvent.index].onPress;
-            if (!onContextPress) return;
-            onContextPress();
-          }}
-        > 
-          <Image style={stylesheet.fitImage} source={require("@/assets/app/PLACEHOLDER.png")}/>
-        </ContextMenu>
+        <TouchableOpacity style={stylesheet.createChatButton} >
+          <ContextMenu 
+            style={stylesheet.createChatButton} 
+            actions={chatOptions}
+            dropdownMenuMode={true}
+            onPress={(e) => {
+              if (!chatOptions) return;
+              const onContextPress = chatOptions[e.nativeEvent.index].onPress;
+              if (!onContextPress) return;
+              onContextPress(chatId);
+            }}
+          > 
+            <Image style={stylesheet.fitImage} source={require("@/assets/app/PLACEHOLDER.png")}/>
+          </ContextMenu>
+        </TouchableOpacity>
 
-        <Text style={stylesheet.chatOptionText}  numberOfLines={1}>{name}</Text>
+        <Text style={stylesheet.chatOptionText} numberOfLines={1}>{name}</Text>
       </TouchableOpacity>
     </View>
   )
