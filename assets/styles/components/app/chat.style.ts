@@ -7,8 +7,13 @@ export const createChatStyle = (colors: ColorScheme) => {
       flex: 1,
     },
 
-    chatInputSafeView: {
-      
+    noMessagesText: {
+      height: "80%",
+      fontSize: 17,
+      color: colors.lowerBackground,
+      textAlign: "center",
+      textAlignVertical: "center",
+      fontWeight: "bold",
     },
 
     chatView: {

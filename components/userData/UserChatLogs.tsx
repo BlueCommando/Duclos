@@ -1,17 +1,11 @@
 import appSettings from '@/assets/appSettings';
 import EncryptedStorage from 'react-native-encrypted-storage';
+import { messageFormat } from '../app/Chat';
 
 export type chatLogs = {
   name: string,
-  logs: log[],
+  logs: messageFormat[],
 }[];
-
-export type log = {
-  role: "sender" | "receiver",
-  type: "text" | "image",
-  time: number,
-  content: string,
-}
 
 export const getUsersChatLogs = async () => {
   try{

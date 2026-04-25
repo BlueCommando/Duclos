@@ -57,7 +57,6 @@ const TempChat = () => {
   useEffect(() => {
     const subscription = DeviceEventEmitter.addListener('ActivityStateChange', (event) => {
       if (event.event === 'onDestroy') {
-        console.log('Screen/Activity is being destroyed');
         chatSettings.current?.deleteAllImages();
       }
     });

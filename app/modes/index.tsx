@@ -1,21 +1,36 @@
 import { createChatModeStyle } from '@/assets/styles/chat/chatMode.style';
-import { Chat, ChatRef } from '@/components/app/Chat';
+import { Chat, ChatRef, messageFormat } from '@/components/app/Chat';
 import genUniqueStr from '@/components/other/GenerateUniqueString';
 import hexToRgba from '@/components/other/HexToRGBA';
-import { chatLogs, getUsersChatLogs, log, saveUsersChatLogs } from '@/components/userData/UserChatLogs';
+import { chatLogs, getUsersChatLogs, saveUsersChatLogs } from '@/components/userData/UserChatLogs';
 import useTheme from '@/hooks/useTheme';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, TouchableOpacity, View, Image, Dimensions, Text, Alert } from "react-native";
 import ContextMenu, { ContextMenuAction } from 'react-native-context-menu-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import RNFS from 'react-native-fs';
+import { create } from "zustand";
+
+type ChatStore = {
+  currentChatId: number
+  changeCurrentChatId: (chatId: number) => void,
+};
+
+export const useChatStore = create<ChatStore>(set => ({
+  currentChatId: -1,
+
+  changeCurrentChatId: (chatId) => {
+    set(state => {
+      return {...state, currentChatId: chatId}
+    })
+  },
+}));
 
 export default function Index() {
   const chatRef = useRef<ChatRef>(null);
 
   const [showingChats, changeShowingChats] = useState(false);
-  const [chatLogs, setChatLogs] = useState<chatLogs | null>(null);
-  const [currentChatId, changeCurrentChatId] = useState<number | null>(null);
+  const [chatLogs, changeChatLogs] = useState<chatLogs>([]);
 
   const theme = useTheme();
   const stylesheet = createChatModeStyle(theme);
@@ -25,32 +40,28 @@ export default function Index() {
     changeShowingChats(prev => !prev);
   }
 
-  const switchChat = (chatId: number) => {
-    if (!chatLogs) return;
+  const switchChat = (chatId: number, newChatLogs?: chatLogs) => {
+    const chatStore = useChatStore.getState();
+
     changeShowingChats(false);
-    changeCurrentChatId(chatId);
-    console.log(chatLogs)
-    chatRef.current?.setAllMessages((chatLogs)[chatId].logs);
+    chatStore.changeCurrentChatId(chatId);
+    chatRef.current?.setAllMessages((newChatLogs || chatLogs)[chatId].logs);
   }
 
   const createNewChat = () => {
-    let newChatId = -1;
+    const chatStore = useChatStore.getState();
+    const newId = chatLogs.length;
 
-    setChatLogs(prev => {
-      const newChatLogs = [...(prev || [])];
+    const newChatLogs = [...chatLogs, {
+      name: `Chat: #${newId + 1}`,
+      logs: [],
+    }];
 
-      newChatId = newChatLogs.push({
-        name: `Chat: #${newChatLogs.length + 1}`,
-        logs: [],
-      });
+    changeChatLogs(newChatLogs);
+    chatStore.changeCurrentChatId(newId);
+    switchChat(newId, newChatLogs);
 
-      saveUsersChatLogs(newChatLogs);
-
-      return newChatLogs;
-    });
-
-    console.log(newChatId)
-    switchChat(newChatId);
+    return newId;
   }
 
   const deleteChat = (chatId: number) => {
@@ -61,7 +72,14 @@ export default function Index() {
         {
           text: "YES", 
           onPress: () => {
-            setChatLogs(prev => {
+            const chatStore = useChatStore.getState();
+
+            if (chatStore.currentChatId === chatId){
+              chatRef.current?.setAllMessages([]);
+              chatStore.changeCurrentChatId(-1);
+            }
+
+            changeChatLogs(prev => {
               prev = prev || [];
               const logs = prev[chatId].logs;
 
@@ -82,11 +100,31 @@ export default function Index() {
     )
   }
 
+  const onNewMessage = (msg: messageFormat) => {
+    const chatStore = useChatStore.getState();
+
+    let id = chatStore.currentChatId;
+
+    if (id === -1){
+      id = createNewChat();
+    };
+
+    changeChatLogs(prev => {
+      const newChatLogs = [...(prev || [])];
+      newChatLogs[id].logs.push(msg);
+
+      saveUsersChatLogs(newChatLogs);
+
+      return newChatLogs;
+    });
+  }
+
   // Get all of the Users Chats
   useEffect(() => {
-    const a = async () => setChatLogs(await getUsersChatLogs());
-    a();
-  }, [])
+    (async () => {
+      changeChatLogs(await getUsersChatLogs());
+    })();
+  }, []);
 
   // User Chat Options
   const chatOptions = [
@@ -127,12 +165,14 @@ export default function Index() {
   // Background Transparency
   const chooseChatContainer = showingChats && { 
     backgroundColor: hexToRgba(theme.lowerBackground, 0.5),
-  } || {}
+  } || {};
+
+  const currentChatId = useChatStore(state => state.currentChatId);
 
   return (
     <View style={stylesheet.container}>
       <SafeAreaView style={stylesheet.container} edges={["top"]}>
-        <Chat ref={chatRef}/>
+        <Chat ref={chatRef} onNewMessage={onNewMessage} showNoMessagesText={currentChatId === -1}/>
       </SafeAreaView>
 
       <View style={[stylesheet.chooseChatContainer, chooseChatContainer]}>

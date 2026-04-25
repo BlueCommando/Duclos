@@ -36,7 +36,7 @@ import ChatInput, { ChatInputRef, ChatSentMessageExample } from './ChatInput';
 
 type allMessagesFormat = messageFormat[];
 
-type messageFormat = {
+export type messageFormat = {
   role: "sender" | "receiver",
   type: "text" | "image" | "loading",
   content: string,
@@ -132,7 +132,8 @@ export type ChatRef = {
 };
 
 type ChatProps = {
-  
+  showNoMessagesText?: boolean,
+  onNewMessage?: (msg: messageFormat) => void,
 };
 
 export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
@@ -195,6 +196,12 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     }
 
     changeAllMessages(prev => [...prev, ...finalMessage]);
+
+    if (props.onNewMessage){
+      for (var i = 0; i < finalMessage.length; i++) {
+        props.onNewMessage(finalMessage[i]);
+      }
+    }
   };
 
   const deleteAllImages = async () => {
@@ -240,7 +247,7 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       })
     }
 
-    createMessage({
+    await createMessage({
       role: "sender",
       content: [
         ...userImages,
@@ -256,7 +263,7 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     // Ai's response
     const response = await chatInputRef.current.genAisResponse();
 
-    createMessage({
+    await createMessage({
       role: "receiver",
       content: [
         {
@@ -294,17 +301,24 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             )
           })}
 
-          {loadingMessage && (
+          {loadingMessage ? (
             <Bubble 
               message={{type: "loading", role: "receiver", content: "NULL", time: Date.now(),}}
               key={generateUniqueString(8)}
             />
-          )}
+          ) : null}
         </View>
       </ScrollView>
 
+      {(allMessages.length === 0 && props.showNoMessagesText) ? (
+        <Text style={stylesheet.noMessagesText}>{`
+Type a Message to create a new Chat.\n
+Or go to an old Chat.
+        `}</Text>
+      ): null}
+
       {/*Chat Input*/}
-      <SafeAreaView style={stylesheet.chatInputSafeView} edges={["bottom"]}>
+      <SafeAreaView edges={["bottom"]}>
         <ChatInput
           ref={chatInputRef}
           onSend={onSend}
