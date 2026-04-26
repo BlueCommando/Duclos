@@ -31,7 +31,7 @@ export default function Index() {
 
   const [showingChats, changeShowingChats] = useState(false);
   const [chatLogs, changeChatLogs] = useState<chatLogs>([]);
-  const [isChatNameChanging, changeIsChatNameChanging] = useState(false);
+  const [chatNameChangingId, changeChatNameChangingId] = useState(-1);
 
   const theme = useTheme();
   const stylesheet = createChatModeStyle(theme);
@@ -68,7 +68,7 @@ export default function Index() {
   const deleteChat = (chatId: number) => {
     Alert.alert(
       "Confirmation:", 
-      "Deleting a chat is irreversible. Are you sure?",
+      `Are you sure you want to delete the chat '${chatLogs[chatId].name}'?\n\nThis action is irreversible.`,
       [
         {
           text: "YES", 
@@ -131,16 +131,11 @@ export default function Index() {
   const chatOptions = [
     {
       title: "Rename Chat",
-      onPress: (chatId: number) => {
-        //changeNewChatName(chatLogs[chatId].name);
-        changeIsChatNameChanging(true);
-      },
+      onPress: changeChatNameChangingId,
     },
     {
       title: "Delete Chat",
-      onPress: (chatId: number) => {
-        deleteChat(chatId);
-      },
+      onPress: deleteChat,
     },
   ]
 
@@ -191,31 +186,33 @@ export default function Index() {
 
               <View style={{height: 5}}/>
 
-              <ScrollView>{
-                chatLogs?.map((v, i) => {
-                  return <ChatOption
-                    name={v.name}
-                    chatId={i}
-                    onPress={() => {
-                      switchChat(i);
-                      changeShowingChats(false);
-                    }}
-                    onChangedName={(t) => {
-                      changeIsChatNameChanging(false);
+              <ScrollView>
+                <View style={stylesheet.chatOptionsView}>{
+                  chatLogs?.map((v, i) => {
+                    return <ChatOption
+                      name={v.name}
+                      chatId={i}
+                      onPress={() => {
+                        switchChat(i);
+                        changeShowingChats(false);
+                      }}
+                      onChangedName={(t) => {
+                        changeChatNameChangingId(-1);
 
-                      changeChatLogs(prev => {
-                        const newChatLogs = [...prev];
-                        newChatLogs[i].name = t;
-                        saveUsersChatLogs(newChatLogs);
-                        return newChatLogs;
-                      })
-                    }}
-                    isChangingName={isChatNameChanging}
-                    chatOptions={chatOptions}
-                    key={genUniqueStr(8)}
-                  />
-                })
-              }</ScrollView>
+                        changeChatLogs(prev => {
+                          const newChatLogs = [...prev];
+                          newChatLogs[i].name = t;
+                          saveUsersChatLogs(newChatLogs);
+                          return newChatLogs;
+                        })
+                      }}
+                      isChangingName={chatNameChangingId === i}
+                      chatOptions={chatOptions}
+                      key={genUniqueStr(8)}
+                    />
+                  })
+                }</View>
+              </ScrollView>
             </SafeAreaView> : null
           }
         </Animated.View>
@@ -272,8 +269,8 @@ const ChatOption = ({name, chatId, chatOptions, isChangingName, onPress, onChang
           </ContextMenu>
         </TouchableOpacity>
         
-        <View style={{flex: 1, }} pointerEvents="none">
-          <TextInput 
+        <View style={stylesheet.container} pointerEvents="none">{
+          isChangingName ? <TextInput 
             ref={inputRef}
             value={newChatName}
             onChangeText={changeNewChatName}
@@ -287,8 +284,12 @@ const ChatOption = ({name, chatId, chatOptions, isChangingName, onPress, onChang
             selectTextOnFocus={false}
             style={stylesheet.chatOptionText} 
             numberOfLines={1}
-          />
-        </View>
+          /> : <Text
+            adjustsFontSizeToFit 
+            minimumFontScale={0.7}
+            style={stylesheet.chatOptionText} 
+          >{newChatName}</Text>
+        }</View>
       </TouchableOpacity>
     </View>
   )

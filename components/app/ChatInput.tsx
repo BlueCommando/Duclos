@@ -90,24 +90,27 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>((props, ref) => {
       })
     }
 
-    const response = await AiService.imageCompletion({
+    console.log(chatSend)
+    const response = AiService.imageCompletion({
       messages: [
         {
           role: "user",
           content: [
+            ...images,
             ...(
               chatSend.text.trim() !== "" && [{
                 type: "text",
                 text: chatSend.text,
               }] || []
             ),
-            ...images,
           ],
         }
       ],
     });
 
-    return response.text;
+    changeChatSend({text: "", images: []});
+
+    return (await response).text;
   }
 
   useImperativeHandle(ref, () => ({
@@ -210,7 +213,6 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>((props, ref) => {
         onSend(finalMessage);
 
         changeLocalText("");
-        changeChatSend({text: "", images: []});
       }}/>
     </View>
   )

@@ -27,12 +27,11 @@ export const createChatModeStyle = (colors: ColorScheme) => {
     createChatButton: {
       height: "100%",
       aspectRatio: 1,
-      borderRadius: "50%",
-      overflow: "hidden",
     },
 
-    chatOptionScrollingFrame: {
-
+    chatOptionsView: {
+      flex: 1,
+      gap: 10,
     },
 
     chatOption: {
