@@ -5,7 +5,7 @@ import hexToRgba from '@/components/other/HexToRGBA';
 import { chatLogs, getUsersChatLogs, saveUsersChatLogs } from '@/components/userData/UserChatLogs';
 import useTheme from '@/hooks/useTheme';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, TouchableOpacity, View, Image, Dimensions, Text, Alert } from "react-native";
+import { Animated, TouchableOpacity, View, Image, Dimensions, Text, Alert, TextInput, ScrollView } from "react-native";
 import ContextMenu, { ContextMenuAction } from 'react-native-context-menu-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import RNFS from 'react-native-fs';
@@ -31,6 +31,7 @@ export default function Index() {
 
   const [showingChats, changeShowingChats] = useState(false);
   const [chatLogs, changeChatLogs] = useState<chatLogs>([]);
+  const [isChatNameChanging, changeIsChatNameChanging] = useState(false);
 
   const theme = useTheme();
   const stylesheet = createChatModeStyle(theme);
@@ -131,7 +132,8 @@ export default function Index() {
     {
       title: "Rename Chat",
       onPress: (chatId: number) => {
-
+        //changeNewChatName(chatLogs[chatId].name);
+        changeIsChatNameChanging(true);
       },
     },
     {
@@ -189,7 +191,7 @@ export default function Index() {
 
               <View style={{height: 5}}/>
 
-              {
+              <ScrollView>{
                 chatLogs?.map((v, i) => {
                   return <ChatOption
                     name={v.name}
@@ -198,12 +200,22 @@ export default function Index() {
                       switchChat(i);
                       changeShowingChats(false);
                     }}
+                    onChangedName={(t) => {
+                      changeIsChatNameChanging(false);
+
+                      changeChatLogs(prev => {
+                        const newChatLogs = [...prev];
+                        newChatLogs[i].name = t;
+                        saveUsersChatLogs(newChatLogs);
+                        return newChatLogs;
+                      })
+                    }}
+                    isChangingName={isChatNameChanging}
                     chatOptions={chatOptions}
                     key={genUniqueStr(8)}
                   />
                 })
-              }
-
+              }</ScrollView>
             </SafeAreaView> : null
           }
         </Animated.View>
@@ -224,12 +236,22 @@ type ChatOptionProps = {
   name: string,
   chatId: number,
   chatOptions: (ContextMenuAction & { onPress?: (chatId: number) => void })[],
+  isChangingName?: boolean,
   onPress?: () => void,
+  onChangedName?: (text: string) => void,
 }
 
-const ChatOption = ({name, chatId, chatOptions, onPress}: ChatOptionProps) => {
+const ChatOption = ({name, chatId, chatOptions, isChangingName, onPress, onChangedName}: ChatOptionProps) => {
   const theme = useTheme();
   const stylesheet = createChatModeStyle(theme);
+
+  const [newChatName, changeNewChatName] = useState(name);
+  const inputRef = useRef<TextInput>(null);
+
+  useEffect(() => {
+    if (!isChangingName) return;
+    inputRef.current?.focus();
+  }, [isChangingName])
 
   return (
     <View style={stylesheet.chatOption}>
@@ -249,8 +271,24 @@ const ChatOption = ({name, chatId, chatOptions, onPress}: ChatOptionProps) => {
             <Image style={stylesheet.fitImage} source={require("@/assets/app/PLACEHOLDER.png")}/>
           </ContextMenu>
         </TouchableOpacity>
-
-        <Text style={stylesheet.chatOptionText} numberOfLines={1}>{name}</Text>
+        
+        <View style={{flex: 1, }} pointerEvents="none">
+          <TextInput 
+            ref={inputRef}
+            value={newChatName}
+            onChangeText={changeNewChatName}
+            onBlur={() => {
+              if (!onChangedName) return;
+              let finalName = newChatName.trim();
+              if (finalName === "") finalName = "[NO-NAME]";
+              changeNewChatName(finalName);
+              onChangedName(finalName);
+            }}
+            selectTextOnFocus={false}
+            style={stylesheet.chatOptionText} 
+            numberOfLines={1}
+          />
+        </View>
       </TouchableOpacity>
     </View>
   )

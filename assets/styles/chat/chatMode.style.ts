@@ -7,6 +7,11 @@ export const createChatModeStyle = (colors: ColorScheme) => {
       flex: 1,
     },
 
+    hideRender: {
+      position: "absolute",
+      opacity: 0,
+    },
+
     chooseChatContainer: {
       width: "100%", 
       height: "100%", 
@@ -26,6 +31,10 @@ export const createChatModeStyle = (colors: ColorScheme) => {
       overflow: "hidden",
     },
 
+    chatOptionScrollingFrame: {
+
+    },
+
     chatOption: {
       width: "100%", 
       height: 50, 
@@ -39,6 +48,7 @@ export const createChatModeStyle = (colors: ColorScheme) => {
       color: colors.textColor,
       textAlignVertical: "center",
       fontWeight: "500",
+      lineHeight: 20,
       fontSize: 20,
       textShadowRadius: 3,
       textShadowColor: colors.textShadowColor,
