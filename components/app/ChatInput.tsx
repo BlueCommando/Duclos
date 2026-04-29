@@ -90,7 +90,6 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>((props, ref) => {
       })
     }
 
-    console.log(chatSend)
     const response = AiService.imageCompletion({
       messages: [
         {
@@ -109,6 +108,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>((props, ref) => {
     });
 
     changeChatSend({text: "", images: []});
+    setTextHeight(stylesheet.container.height);
 
     return (await response).text;
   }
@@ -196,6 +196,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>((props, ref) => {
             setTextHeight(Math.max(e.nativeEvent.contentSize.height, stylesheet.container.height));
           }}
           multiline={true}
+          placeholderTextColor={theme.textPlaceholderColor}
           placeholder="Click to type a Message to AI"
         />
       </View>

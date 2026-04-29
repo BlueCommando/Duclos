@@ -5,12 +5,14 @@ export const createChatStyle = (colors: ColorScheme) => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
+      backgroundColor: colors.subBackground,
     },
 
     noMessagesText: {
       height: "80%",
       fontSize: 17,
-      color: colors.lowerBackground,
+      color: colors.textColor,
+      backgroundColor: colors.subBackground,
       textAlign: "center",
       textAlignVertical: "center",
       fontWeight: "bold",
@@ -42,7 +44,7 @@ export const createChatStyle = (colors: ColorScheme) => {
 
     reciverBubble: {
       width: "90%",
-      backgroundColor: "#cfcfcf",
+      backgroundColor: "#aaaaaa",
       marginLeft: 10,
     },
 
@@ -110,8 +112,8 @@ export const createChatStyle = (colors: ColorScheme) => {
     },
 
     reciverLoadingBubble: {
-      width: "45%",
-      backgroundColor: "#cfcfcf",
+      width: "25%",
+      backgroundColor: "#aaaaaa",
       marginLeft: 10,
     },
 
@@ -122,6 +124,10 @@ export const createChatStyle = (colors: ColorScheme) => {
       borderRadius: "50%",
       backgroundColor: "#888888",
       padding: 10,
+    },
+
+    safeChatInputView: {
+      backgroundColor: colors.background,
     },
   });
   

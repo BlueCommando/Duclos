@@ -2,6 +2,7 @@ import { PermissionsAndroid, Platform } from "react-native";
 
 // For camera permission for android.
 // Copied from: https://github.com/react-native-cameraroll/react-native-cameraroll/blob/master/README.md
+// ^ was edited a bit because the given code is so old.
 
 let version = 0;
 if (typeof Platform.Version === "string"){

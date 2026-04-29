@@ -6,7 +6,7 @@ import useTheme from '@/hooks/useTheme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, BackHandler, StatusBar } from 'react-native';
+import { Alert, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
@@ -61,9 +61,6 @@ export default function HomeScreen() {
   const theme = useTheme();
 
   return (
-  <>
-    <StatusBar barStyle={theme.statusBarStyle}/>
-
     <LinearGradient colors={theme.gradients.background} style={{flex: 1}}>
       <SafeAreaView style={{ flex: 1 }}>
         <LogoBox 
@@ -106,6 +103,5 @@ export default function HomeScreen() {
         )}
       </SafeAreaView>
     </LinearGradient>
-  </>
   )
 }

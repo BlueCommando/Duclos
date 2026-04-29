@@ -5,10 +5,10 @@ import hexToRgba from '@/components/other/HexToRGBA';
 import { chatLogs, getUsersChatLogs, saveUsersChatLogs } from '@/components/userData/UserChatLogs';
 import useTheme from '@/hooks/useTheme';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, TouchableOpacity, View, Image, Dimensions, Text, Alert, TextInput, ScrollView } from "react-native";
+import { Alert, Animated, Dimensions, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import ContextMenu, { ContextMenuAction } from 'react-native-context-menu-view';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import RNFS from 'react-native-fs';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { create } from "zustand";
 
 type ChatStore = {
@@ -167,7 +167,7 @@ export default function Index() {
   const currentChatId = useChatStore(state => state.currentChatId);
 
   return (
-    <View style={stylesheet.container}>
+    <View style={stylesheet.mainContainer}>
       <SafeAreaView style={stylesheet.container} edges={["top"]}>
         <Chat ref={chatRef} onNewMessage={onNewMessage} showNoMessagesText={currentChatId === -1}/>
       </SafeAreaView>

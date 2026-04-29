@@ -42,12 +42,13 @@ const createPhotoOptionStyle = (color: ColorScheme) => {
     mainContainer: {
       flex: 1,
       alignItems: "center",
+      backgroundColor: color.subBackground,
     },
 
     childrenContainer: {
       width: "100%",
       height: 600,
-      backgroundColor: color.opposite.background,
+      backgroundColor: color.lowerBackground,
       marginTop: 10,
       marginBottom: 25, 
     },
@@ -68,11 +69,13 @@ const createPhotoOptionStyle = (color: ColorScheme) => {
       textAlign: "center",
       fontSize: 25,
       marginBottom: 10,
+      color: color.textColor,
     },
 
     text: {
       textAlign: "center",
       fontSize: 15,
+      color: color.textColor,
     }
   })
 

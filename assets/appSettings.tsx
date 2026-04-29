@@ -16,7 +16,9 @@ export default {
 
   imagery: {},
 
-  settings: {},
+  settings: {
+    userSettingsAsyncKey: "_userSettings",
+  },
 
   ai: {
     text_n_perdict: 1024,

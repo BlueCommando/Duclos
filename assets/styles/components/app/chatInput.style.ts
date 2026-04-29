@@ -24,6 +24,7 @@ export const createChatInputStyle = (colors: ColorScheme) => {
       flex: 1,
       paddingLeft: 20,
       paddingRight: 20,
+      color: colors.textColor,
       backgroundColor: colors.subBackground,
       fontWeight: "500",
     },

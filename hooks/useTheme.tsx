@@ -1,5 +1,5 @@
 import React, { createContext, ReactNode, useContext } from 'react';
-import { ImageSourcePropType, useColorScheme } from 'react-native';
+import { ImageSourcePropType, StatusBar, useColorScheme } from 'react-native';
 
 // Detects if user is using light mode or dark mode
 
@@ -44,7 +44,7 @@ export const lightColors: ColorScheme = {
   },
   
   assets: {
-    loadingCirclePath: require("@/assets/images/loading/LightLoadingCircle.png"),
+    loadingCirclePath: require("@/assets/images/loading/DarkLoadingCircle.png"),
   },
 
   statusBarStyle: "dark-content" as const,
@@ -68,7 +68,7 @@ export const darkColors: ColorScheme = {
   },
 
   assets: {
-    loadingCirclePath: require("@/assets/images/loading/DarkLoadingCircle.png"),
+    loadingCirclePath: require("@/assets/images/loading/LightLoadingCircle.png"),
   },
 
   statusBarStyle: "light-content" as const,
@@ -84,10 +84,12 @@ export const ThemeProvider = ({ children }: { children: ReactNode} ) => {
     const usersTheme = useColorScheme()
     const theme = usersTheme === "dark" ? darkColors : lightColors
 
+    StatusBar.setBarStyle(theme.statusBarStyle);
+
     return (
-        <ThemeContext.Provider value={theme}>
-            {children}
-        </ThemeContext.Provider>
+      <ThemeContext.Provider value={theme}>
+          {children}
+      </ThemeContext.Provider>
     )
 };
 

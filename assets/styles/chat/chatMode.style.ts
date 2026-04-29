@@ -3,6 +3,11 @@ import { StyleSheet } from "react-native";
 
 export const createChatModeStyle = (colors: ColorScheme) => {
   const styles = StyleSheet.create({
+    mainContainer: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+
     container: {
       flex: 1,
     },
@@ -52,6 +57,7 @@ export const createChatModeStyle = (colors: ColorScheme) => {
       textShadowRadius: 3,
       textShadowColor: colors.textShadowColor,
       flexWrap: "nowrap",
+      height: "100%",
     },
 
     showAllChatsContainer: {

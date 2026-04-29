@@ -311,14 +311,11 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       </ScrollView>
 
       {(allMessages.length === 0 && props.showNoMessagesText) ? (
-        <Text style={stylesheet.noMessagesText}>{`
-Type a Message to create a new Chat.\n
-Or go to an old Chat.
-        `}</Text>
+        <Text style={stylesheet.noMessagesText}>{`Type a Message to create a new Chat.\nOr go to an old Chat.`}</Text>
       ): null}
 
       {/*Chat Input*/}
-      <SafeAreaView edges={["bottom"]}>
+      <SafeAreaView style={stylesheet.safeChatInputView} edges={["bottom"]}>
         <ChatInput
           ref={chatInputRef}
           onSend={onSend}

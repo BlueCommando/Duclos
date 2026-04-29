@@ -1,10 +1,10 @@
+import { imageryLocalParams } from '@/assets/styles/imagery/ImageryLocalParam';
 import { createPromptScreenStyle } from '@/assets/styles/imagery/PrepromptScreen.style';
 import PhotoOptions from '@/components/imagery/PhotoOptions';
 import useTheme from '@/hooks/useTheme';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import { TextInput } from 'react-native';
-import { imageryLocalParams } from '@/assets/styles/imagery/ImageryLocalParam';
 
 const PrepromptScreen = () => {
   const params = useLocalSearchParams<imageryLocalParams>();
@@ -15,7 +15,7 @@ const PrepromptScreen = () => {
     if (router.canGoBack()){
       router.dismiss(1);
       router.replace({
-        pathname: "./CropScreen",
+        pathname: "./CropScreenImagery",
         params: {
           ...params,
           prompt: text,
@@ -57,7 +57,7 @@ const PrepromptScreen = () => {
         onChangeText={changeText}
         multiline={true}
         placeholder="Click to type a Message to AI"
-        placeholderTextColor={theme.opposite.textPlaceholderColor}
+        placeholderTextColor={theme.textPlaceholderColor}
         textAlign='left'
         textAlignVertical='top'
       ></TextInput>
