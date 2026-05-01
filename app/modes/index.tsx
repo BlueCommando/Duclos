@@ -2,7 +2,7 @@ import { createChatModeStyle } from '@/assets/styles/chat/chatMode.style';
 import { Chat, ChatRef, messageFormat } from '@/components/app/Chat';
 import genUniqueStr from '@/components/other/GenerateUniqueString';
 import hexToRgba from '@/components/other/HexToRGBA';
-import { chatLogs, getUsersChatLogs, saveUsersChatLogs } from '@/components/userData/UserChatLogs';
+import { chatLogs, useChatLogStore } from '@/components/userData/UserChatLogs';
 import useTheme from '@/hooks/useTheme';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Animated, Dimensions, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -28,9 +28,9 @@ export const useChatStore = create<ChatStore>(set => ({
 
 export default function Index() {
   const chatRef = useRef<ChatRef>(null);
+  const chatLogStore = useChatLogStore.getState();
 
   const [showingChats, changeShowingChats] = useState(false);
-  const [chatLogs, changeChatLogs] = useState<chatLogs>([]);
   const [chatNameChangingId, changeChatNameChangingId] = useState(-1);
 
   const theme = useTheme();
@@ -46,54 +46,52 @@ export default function Index() {
 
     changeShowingChats(false);
     chatStore.changeCurrentChatId(chatId);
-    chatRef.current?.setAllMessages((newChatLogs || chatLogs)[chatId].logs);
+    chatRef.current?.setAllMessages((newChatLogs || chatLogStore.chatLogs)[chatId].logs);
   }
 
   const createNewChat = () => {
     const chatStore = useChatStore.getState();
-    const newId = chatLogs.length;
+    const newId = chatLogStore.chatLogs.length;
 
-    const newChatLogs = [...chatLogs, {
+    const newChatLogs = [...chatLogStore.chatLogs, {
       name: `Chat: #${newId + 1}`,
       logs: [],
     }];
 
-    changeChatLogs(newChatLogs);
+    chatLogStore.saveChatLogs(newChatLogs);
     chatStore.changeCurrentChatId(newId);
     switchChat(newId, newChatLogs);
 
-    return newId;
+    return {chatLogs: newChatLogs, id: newId};
   }
 
   const deleteChat = (chatId: number) => {
     Alert.alert(
       "Confirmation:", 
-      `Are you sure you want to delete the chat '${chatLogs[chatId].name}'?\n\nThis action is irreversible.`,
+      `Are you sure you want to delete the chat '${chatLogStore.chatLogs[chatId].name}'?\n\nThis action is irreversible.`,
       [
         {
           text: "YES", 
           onPress: () => {
+            /*
             const chatStore = useChatStore.getState();
 
             if (chatStore.currentChatId === chatId){
               chatRef.current?.setAllMessages([]);
               chatStore.changeCurrentChatId(-1);
             }
+            */
 
-            changeChatLogs(prev => {
-              prev = prev || [];
-              const logs = prev[chatId].logs;
+            const logs = chatLogStore.chatLogs[chatId].logs;
 
-              for (var i = 0; i < logs.length; i++) {
-                const v = logs[i];
-                if (v.type !== "image") continue;
-                RNFS.unlink(v.content);
-              }
+            for (var i = 0; i < logs.length; i++) {
+              const v = logs[i];
+              if (v.type !== "image") continue;
+              RNFS.unlink(v.content);
+            }
 
-              const newChatLogs = prev.filter((_, i) => chatId !== i);
-              saveUsersChatLogs(newChatLogs);
-              return newChatLogs;
-            });
+            const newChatLogs = chatLogStore.chatLogs.filter((_, i) => chatId !== i);
+            chatLogStore.saveChatLogs(newChatLogs);
         }},
 
         {text: "NO"},
@@ -105,25 +103,34 @@ export default function Index() {
     const chatStore = useChatStore.getState();
 
     let id = chatStore.currentChatId;
+    let chatLogs: chatLogs = chatLogStore.chatLogs
 
     if (id === -1){
-      id = createNewChat();
+      const chatInfo = createNewChat();
+      id = chatInfo.id;
+      chatLogs = chatInfo.chatLogs;
     };
 
-    changeChatLogs(prev => {
-      const newChatLogs = [...(prev || [])];
-      newChatLogs[id].logs.push(msg);
-
-      saveUsersChatLogs(newChatLogs);
-
-      return newChatLogs;
-    });
+    const newChatLogs = [...chatLogs];
+    newChatLogs[id].logs.push(msg);
+    chatLogStore.saveChatLogs(newChatLogs);
   }
+
+  useEffect(() => {
+    const chatStore = useChatStore.getState();
+
+    if (chatStore.currentChatId === -1) return;
+
+    if (!(chatStore.currentChatId in chatLogStore.chatLogs)){
+      chatRef.current?.setAllMessages([]);
+      chatStore.changeCurrentChatId(-1);
+    }
+  }, [useChatLogStore()]);
 
   // Get all of the Users Chats
   useEffect(() => {
     (async () => {
-      changeChatLogs(await getUsersChatLogs());
+      await chatLogStore.loadChatLogs();
     })();
   }, []);
 
@@ -188,7 +195,7 @@ export default function Index() {
 
               <ScrollView>
                 <View style={stylesheet.chatOptionsView}>{
-                  chatLogs?.map((v, i) => {
+                  chatLogStore.chatLogs?.map((v, i) => {
                     return <ChatOption
                       name={v.name}
                       chatId={i}
@@ -199,12 +206,9 @@ export default function Index() {
                       onChangedName={(t) => {
                         changeChatNameChangingId(-1);
 
-                        changeChatLogs(prev => {
-                          const newChatLogs = [...prev];
-                          newChatLogs[i].name = t;
-                          saveUsersChatLogs(newChatLogs);
-                          return newChatLogs;
-                        })
+                        const newChatLogs = [...chatLogStore.chatLogs];
+                        newChatLogs[i].name = t;
+                        chatLogStore.saveChatLogs(newChatLogs);
                       }}
                       isChangingName={chatNameChangingId === i}
                       chatOptions={chatOptions}

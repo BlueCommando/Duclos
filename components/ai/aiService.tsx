@@ -3,7 +3,7 @@ import NetInfo from "@react-native-community/netinfo";
 import { Asset } from 'expo-asset';
 import { File } from 'expo-file-system';
 import { CompletionParams, initLlama, LlamaContext, NativeCompletionResult } from 'llama.rn';
-import { Alert, BackHandler, ImageSourcePropType } from 'react-native';
+import { Alert, BackHandler } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import RNFS, { DownloadProgressCallbackResult } from 'react-native-fs';
 import AiFileCheck from './AiFileCheck';
@@ -315,6 +315,24 @@ class AiService{
     */
     async removeImageBase64Prefix(base64: string){
       return base64.split(",")[1];
+    }
+
+    /** 
+     * Gets the AI's model name and MMProj name. (That's it.)
+    */
+    public getAiModelInfo(){
+      const info = {
+        aiModelName: "",
+        mmprojModelMame: "",
+      };
+      
+      const aiModelFullName = aiModelDownloadLink.split("/").pop();
+      info.aiModelName = aiModelFullName?.substring(0, aiModelFullName.lastIndexOf(".")) || "UNKNOWN AI MODEL";
+
+      const mmprojFullName =  aiMMProjDownloadLink.split("/").pop();
+      info.mmprojModelMame = mmprojFullName?.substring(0, mmprojFullName.lastIndexOf(".")) || "UNKNOWN MMPROJ MODEL";
+
+      return info;
     }
 
     async cleanUp(){

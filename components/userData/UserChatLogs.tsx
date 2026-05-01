@@ -1,5 +1,6 @@
 import appSettings from '@/assets/appSettings';
 import EncryptedStorage from 'react-native-encrypted-storage';
+import { create } from 'zustand';
 import { messageFormat } from '../app/Chat';
 
 export type chatLogs = {
@@ -7,28 +8,45 @@ export type chatLogs = {
   logs: messageFormat[],
 }[];
 
-export const getUsersChatLogs = async () => {
-  try{
-    const session = await EncryptedStorage.getItem(appSettings.user.userChatLogsAsyncKey);
+export type chatLogStore = {
+  chatLogs: chatLogs,
+  saveChatLogs: (newChatLogs: chatLogs) => Promise<void>,
+  loadChatLogs: () => Promise<chatLogs>,
+}
 
-    if (session !== null){
-      return JSON.parse(session);
-    } else {
-      return []
+export const useChatLogStore = create<chatLogStore>((set) => ({
+  chatLogs: [],
+
+  saveChatLogs: async (newChatLogs: chatLogs) => {
+    try{
+      await EncryptedStorage.setItem(
+        appSettings.user.userChatLogsAsyncKey,
+        JSON.stringify(newChatLogs)
+      );
+      
+      set({chatLogs: newChatLogs});
+
+      console.log("Successfully saved chatlogs!");
+    } catch(e) {
+      console.log("Error while trying to save chatLogs:", e);
     }
-  } catch(e) {
-    console.log("Error while trying to get chatLogs:", e)
-  }
-}
+  },
 
-export const saveUsersChatLogs = async (chat: chatLogs) => {
-  try{
-    await EncryptedStorage.setItem(
-      appSettings.user.userChatLogsAsyncKey,
-      JSON.stringify(chat)
-    );
-    console.log("Successfully saved chatlogs!")
-  } catch(e) {
-    console.log("Error while trying to save chatLogs:", e)
+  loadChatLogs: async () => {
+    try{
+      const session = await EncryptedStorage.getItem(appSettings.user.userChatLogsAsyncKey);
+
+      if (session !== null){
+        const chat: chatLogs = JSON.parse(session);
+        set({chatLogs: chat});
+        return chat;
+      }
+
+      return [];
+    } catch(e) {
+      console.log("Error while trying to get chatLogs:", e);
+      // throw critical error
+      return [];
+    }
   }
-}
+}));
