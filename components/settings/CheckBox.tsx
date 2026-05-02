@@ -1,7 +1,7 @@
 
 import { createCheckboxStyle } from '@/assets/styles/settings/CheckBox.style';
 import useTheme from '@/hooks/useTheme';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, TouchableOpacity } from 'react-native';
 
 type checkBoxProps = {

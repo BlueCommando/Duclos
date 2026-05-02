@@ -7,6 +7,7 @@ import { Alert, BackHandler } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import RNFS, { DownloadProgressCallbackResult } from 'react-native-fs';
 import AiFileCheck from './AiFileCheck';
+import { useSettingsStore } from '../userData/UserSettings';
 
 // Help with llama.rn:
 // https://github.com/mybigday/llama.rn/blob/main/README.md
@@ -241,29 +242,55 @@ class AiService{
     }
 
     /** 
-     * Same as 'rawCompletion' but is instructed to be a chatbot.
+     * Same as 'userCompletion' but is instructed to be a chatbot.
      * 
      * (CAN'T READ IMAGES.)
     */
     async textCompletion(params: CompletionParams): Promise<NativeCompletionResult> {
       params.stop = appSettings.ai.stopWords;
       params.n_predict = appSettings.ai.text_n_perdict;
+
+      const settingsStore = useSettingsStore.getState();
+      if (!settingsStore.settings.systemCompletion) return this.userCompletion(params);
+
       params.messages = params.messages?.concat(appSettings.ai.universalCompletionMessage);
       params.messages = params.messages?.concat(appSettings.ai.textCompletionMessage);
-      return this.rawCompletion(params)
+      return this.userCompletion(params);
     }
 
     /** 
-     * Same as 'rawCompletion' but is instructed to be a imagebot.
+     * Same as 'userCompletion' but is instructed to be a imagebot.
      * 
      * (CAN READ IMAGES AND READ TEXT.)
     */
     async imageCompletion(params: CompletionParams): Promise<NativeCompletionResult> {
       params.stop = appSettings.ai.stopWords;
       params.n_predict = appSettings.ai.imagery_n_predict;
+
+      const settingsStore = useSettingsStore.getState();
+      if (!settingsStore.settings.systemCompletion) return this.userCompletion(params);
+
       params.messages = params.messages?.concat(appSettings.ai.universalCompletionMessage);
       params.messages = params.messages?.concat(appSettings.ai.imageCompletionMessage);
-      return this.rawCompletion(params)
+      return this.userCompletion(params);
+    }
+
+    /** 
+     * Same as 'rawCompletion' but the users settings can change the params.
+    */
+    async userCompletion(params: CompletionParams): Promise<NativeCompletionResult>{
+      const settingsStore = useSettingsStore.getState();
+
+      if (settingsStore.settings.prepromptedMessage){
+        params.messages = params.messages?.concat([
+          {
+            role: "administrator",
+            content: settingsStore.settings.prepromptedMessage,
+          },
+        ]);
+      }
+
+      return this.rawCompletion(params);
     }
 
     /** 

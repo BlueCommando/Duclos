@@ -21,6 +21,8 @@ export default {
   },
 
   ai: {
+    rereadPastMessagesLimit: 10,
+
     text_n_perdict: 1024,
     imagery_n_predict: 1024,
 

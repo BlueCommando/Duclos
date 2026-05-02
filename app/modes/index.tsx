@@ -127,13 +127,6 @@ export default function Index() {
     }
   }, [useChatLogStore()]);
 
-  // Get all of the Users Chats
-  useEffect(() => {
-    (async () => {
-      await chatLogStore.loadChatLogs();
-    })();
-  }, []);
-
   // User Chat Options
   const chatOptions = [
     {

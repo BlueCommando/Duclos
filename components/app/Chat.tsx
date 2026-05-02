@@ -261,7 +261,7 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     setTimeout(() => createLoadingText(), 1000);
 
     // Ai's response
-    const response = await chatInputRef.current.genAisResponse();
+    const response = await chatInputRef.current.genAisResponse(allMessages);
 
     await createMessage({
       role: "receiver",

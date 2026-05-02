@@ -2,6 +2,8 @@ import AiService from '@/components/ai/AiService';
 import IntroText from '@/components/screens/loadingScreen/IntroText';
 import LoadingBar from '@/components/screens/loadingScreen/LoadingBar';
 import LogoBox from '@/components/screens/loadingScreen/LogoBox';
+import { useChatLogStore } from '@/components/userData/UserChatLogs';
+import { useSettingsStore } from '@/components/userData/UserSettings';
 import useTheme from '@/hooks/useTheme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -56,6 +58,11 @@ export default function HomeScreen() {
       changeBarVisiblity(true);
       initAI();
     }, 2000)
+  }, []);
+
+  useEffect(() => {
+    useChatLogStore.getState().loadChatLogs();
+    useSettingsStore.getState().loadUserSettings();
   }, []);
 
   const theme = useTheme();

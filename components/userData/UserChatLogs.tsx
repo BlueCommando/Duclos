@@ -1,5 +1,6 @@
 import appSettings from '@/assets/appSettings';
 import EncryptedStorage from 'react-native-encrypted-storage';
+import Toast from 'react-native-simple-toast';
 import { create } from 'zustand';
 import { messageFormat } from '../app/Chat';
 
@@ -28,7 +29,8 @@ export const useChatLogStore = create<chatLogStore>((set) => ({
 
       console.log("Successfully saved chatlogs!");
     } catch(e) {
-      console.log("Error while trying to save chatLogs:", e);
+      Toast.show("Failed to save Chatlogs. Try Again later.", 3000)
+      throw new Error("Error while trying to save chatLogs: " + e);
     }
   },
 
@@ -44,9 +46,8 @@ export const useChatLogStore = create<chatLogStore>((set) => ({
 
       return [];
     } catch(e) {
-      console.log("Error while trying to get chatLogs:", e);
-      // throw critical error
-      return [];
+      Toast.show("Failed to load Chatlogs. Try Again later.", 3000)
+      throw new Error("Error while trying to get chatLogs: " + e);
     }
   }
 }));
