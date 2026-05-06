@@ -14,12 +14,13 @@ export const createCheckboxStyle = (colors: ColorScheme) => {
     },
 
     checkedContainer: {
-      backgroundColor: "#2294fb",
+      backgroundColor: colors.lowerBackground,
     },
 
     fit: {
-      width: "100%",
-      height: "100%",
+      resizeMode: "contain",
+      width: 35,
+      height: 35,
     },
   });
   

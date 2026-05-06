@@ -461,7 +461,7 @@ const Bubble = ({message}: BubbleProps) => {
               <LoadingBubble offsetAlpha={0.66}/>
             </View>
 
-          : <Text>'MESSAGE.TYPE' IS AT AN UNKNOWN VALUE. PLEASE REPORT!</Text>
+          : <Text>'MESSAGE.TYPE' IS '{message.type}'. PLEASE REPORT!</Text>
         }
       </View>
 
@@ -489,7 +489,7 @@ const Bubble = ({message}: BubbleProps) => {
           >
             <Image 
               style={stylesheet.bubbleInfoButtonImage} 
-              source={require("@/assets/app/PLACEHOLDER.png")}
+              source={theme.assets.info}
             />
           </ContextMenu>
         </View>

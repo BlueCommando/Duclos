@@ -50,6 +50,7 @@ export const useSettingsStore = create<settingsStore>((set) => ({
         set({settings: settings, loaded: true});
         return settings;
       }
+      set({loaded: true});
 
       return defaultUserSettings;
     } catch(e) {

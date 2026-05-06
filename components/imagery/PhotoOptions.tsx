@@ -30,8 +30,16 @@ const PhotoOptions = ({style, header, text, onPressBack, onPressForward, childre
     </SafeAreaView>
 
     <View style={stylesheet.bottomBar}>
-      <SinglePhotoOption onPress={onPressBack}/>
-      <SinglePhotoOption onPress={onPressForward}/>
+      <SinglePhotoOption 
+        onPress={onPressBack} 
+        source={theme.assets.leftArrow} 
+        style={{padding: 10, paddingRight: 15,}}
+      />
+      <SinglePhotoOption 
+        onPress={onPressForward} 
+        source={theme.assets.rightArrow}
+        style={{padding: 10, paddingLeft: 15,}}
+      />
     </View>
   </>
   )

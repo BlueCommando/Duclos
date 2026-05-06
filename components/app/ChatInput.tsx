@@ -2,6 +2,7 @@ import appSettings from '@/assets/appSettings';
 import { createChatInputStyle } from '@/assets/styles/components/app/chatInput.style';
 import { imageryLocalParams } from '@/assets/styles/imagery/ImageryLocalParam';
 import generateUniqueString from '@/components/other/GenerateUniqueString';
+import { useSettingsStore } from '@/components/userData/UserSettings';
 import useTheme from '@/hooks/useTheme';
 import { router } from 'expo-router';
 import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
@@ -13,7 +14,6 @@ import Toast from 'react-native-simple-toast';
 import { create } from "zustand";
 import AiService from '../ai/AiService';
 import { messageFormat } from './Chat';
-import { useSettingsStore } from '@/components/userData/UserSettings';
 
 // Help with zustand:
 // https://zustand.docs.pmnd.rs/learn/getting-started/introduction#installation
@@ -218,7 +218,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>((props, ref) => {
                 >
                   <Image 
                     style={stylesheet.image} 
-                    source={require("@/assets/app/PLACEHOLDER.png")}
+                    source={theme.assets.trash}
                   />
                 </TouchableOpacity>
               </View>
@@ -363,7 +363,7 @@ const ChatAttach = ({uniqueId, attachmentCount, onAttach}: ChatAttackProps) => {
         >
           <Image 
             style={stylesheet.image} 
-            source={require("@/assets/app/PLACEHOLDER.png")}
+            source={theme.assets.plus}
           />
         </ContextMenu>
       </View>
@@ -383,7 +383,7 @@ const ChatSend = ({onPress}: ChatSendProps) => {
     <View style={stylesheet.centerContainer}>
       <View style={stylesheet.sendView}>
         <TouchableOpacity style={stylesheet.sendTouchOpacity} onPress={onPress}>
-          <Image style={stylesheet.image} source={require("@/assets/app/PLACEHOLDER.png")}/>
+          <Image style={stylesheet.image} source={theme.assets.rightArrow}/>
         </TouchableOpacity>
       </View>
     </View>

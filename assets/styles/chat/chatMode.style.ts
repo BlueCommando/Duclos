@@ -69,6 +69,8 @@ export const createChatModeStyle = (colors: ColorScheme) => {
     showAllChatsButton: {
       overflow: "hidden",
       borderRadius: "50%",
+      backgroundColor: colors.lowerBackground,
+      padding: 5,
       width: 50,
       height: 50,
     },

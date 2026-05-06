@@ -1,8 +1,8 @@
 
 import { createCheckboxStyle } from '@/assets/styles/settings/CheckBox.style';
 import useTheme from '@/hooks/useTheme';
-import React, { useEffect, useState } from 'react';
-import { Image, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { Image, TouchableOpacity, View } from 'react-native';
 
 type checkBoxProps = {
   initCheck?: boolean,
@@ -28,7 +28,7 @@ const CheckBox = ({initCheck, onPressed}: checkBoxProps) => {
         })
       }}
     >
-      {bool ? <Image style={stylesheet.fit} source={require("@/assets/app/PLACEHOLDER.png")}/> : null}
+      {bool ? <Image style={stylesheet.fit} source={theme.assets.check}/> : null}
     </TouchableOpacity>
   )
 }

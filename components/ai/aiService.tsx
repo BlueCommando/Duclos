@@ -50,13 +50,18 @@ class AiService{
      * Alerts the user that they're below the free RAM requirements 
      * and confirms if they want to continue.
     */
-    private async userMinRamConfirmation(): Promise<boolean> {
+    private async userMinRamConfirmation(): Promise<boolean> { 
+      const deviceState = await this.getDeviceState();
+
       const minFreeRamGigs = appSettings.device.minDeviceFreeBytesRAM / Math.pow(10, 9);
+      const freeRamGigs = Math.floor(deviceState.freeRAM / Math.pow(10, 9) * 100) / 100;
+
+      console.log(freeRamGigs);
 
       return new Promise<boolean>((resolve) => {
         Alert.alert(
           "Confirmation:",
-          `You don't have the recommended amount of free RAM (${minFreeRamGigs}GB).\n\nDo you wish to continue?`,
+          `You don't have the recommended amount of free RAM (${minFreeRamGigs}GB).\n\n(You have ${freeRamGigs}GB.)\n\nDo you wish to continue?`,
           [
             { text: "YES", onPress: () => resolve(true) },
             { text: "NO", onPress: () => {
@@ -207,6 +212,11 @@ class AiService{
 
       // RAM Check:
       const deviceState = await this.getDeviceState();
+
+      const freeRamGigs = Math.floor(deviceState.freeRAM / Math.pow(10, 9) * 100) / 100;
+
+      console.log(freeRamGigs);
+
       if (deviceState.freeRAM < appSettings.device.minDeviceFreeBytesRAM){
         if (!(await this.userMinRamConfirmation())){
           return;

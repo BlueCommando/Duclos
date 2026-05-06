@@ -1,19 +1,20 @@
 import useTheme, { ColorScheme } from '@/hooks/useTheme';
 import React from 'react';
-import { Image, ImageSourcePropType, StyleSheet, TouchableOpacity } from 'react-native';
+import { Image, ImageSourcePropType, ImageStyle, StyleProp, StyleSheet, TouchableOpacity } from 'react-native';
 
 type SinglePhotoOptionProps = {
   onPress?: () => void,
+  style?: StyleProp<ImageStyle>,
   source?: ImageSourcePropType,
 }
 
-const SinglePhotoOption = ({ onPress, source }: SinglePhotoOptionProps) => {
+const SinglePhotoOption = ({ onPress, source, style }: SinglePhotoOptionProps) => {
   const theme = useTheme();
-  const style = createSinPhoOptStyle(theme);
+  const stylesheet = createSinPhoOptStyle(theme);
 
   return (
-    <TouchableOpacity style={style.option} onPress={onPress}>
-      <Image source={source} style={style.image}/>
+    <TouchableOpacity style={[stylesheet.option, style]} onPress={onPress}>
+      <Image source={source} style={stylesheet.image}/>
     </TouchableOpacity>
   )
 };

@@ -1,3 +1,4 @@
+import appSettings from '@/assets/appSettings'
 import { createSettingsStyle } from '@/assets/styles/modes/settings.style'
 import AiService from '@/components/ai/AiService'
 import ChangeAiModel from '@/components/settings/ChangeAiModel'
@@ -5,7 +6,7 @@ import CheckBox from '@/components/settings/CheckBox'
 import DeleteAllChats from '@/components/settings/DeleteAllChats'
 import { useSettingsStore } from '@/components/userData/UserSettings'
 import useTheme from '@/hooks/useTheme'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
@@ -18,6 +19,8 @@ const settings = () => {
   const [prePromptedText, changePrePromptedText] = useState(settingsStore.settings.prepromptedMessage || "");
 
   const aiModelInfo = AiService.getAiModelInfo();
+
+  console.log(settingsStore.loaded)
 
   if (!settingsStore.loaded) return <View/>;
 
@@ -60,7 +63,7 @@ const settings = () => {
                 onPress={ChangeAiModel}
               >
                 <Text style={stylesheet.nonEditableText}>
-                  {`AI Model:\n${aiModelInfo.aiModelName}\n\nMMProj Model:\n${aiModelInfo.mmprojModelMame}`}
+                  {`AI Model:\n${aiModelInfo.aiModelName}\n\nMMProj File:\n${aiModelInfo.mmprojModelMame}`}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -78,7 +81,7 @@ const settings = () => {
               <View style={{maxWidth: "80%"}}>
                 <Text style={stylesheet.headerText}>Conversation Context</Text>
                 <Text style={stylesheet.text}>{
-                  `AI re-reads the past 10 messages between you and the AI.\n(Does not re-read images.)`
+                  `AI re-reads the past ${appSettings.ai.rereadPastMessagesLimit} messages between you and the AI.\n(Does not re-read images.)`
                 }</Text>
               </View>
             </View>
@@ -106,7 +109,7 @@ const settings = () => {
             {/*Delete all chats*/}
             <TouchableOpacity onPress={DeleteAllChats} style={stylesheet.basicSettingBox}>
               <View style={stylesheet.smallImageView}>
-                <Image style={stylesheet.fitImage} source={require("@/assets/app/PLACEHOLDER.png")}/>
+                <Image style={stylesheet.fitImage} source={theme.assets.trash}/>
               </View>
 
               <Text style={stylesheet.redText}>Delete ALL Chats</Text>

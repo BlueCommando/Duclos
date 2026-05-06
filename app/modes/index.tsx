@@ -178,7 +178,7 @@ export default function Index() {
             <SafeAreaView style={[stylesheet.container, {gap: 10}]} edges={["top"]}>
               <TouchableOpacity style={stylesheet.chatOption} onPress={createNewChat}>
                 <View style={stylesheet.createChatButton}> 
-                  <Image style={stylesheet.fitImage} source={require("@/assets/app/PLACEHOLDER.png")}/>
+                  <Image style={stylesheet.fitImage} source={theme.assets.chat}/>
                 </View>
 
                 <Text style={stylesheet.chatOptionText}  numberOfLines={1}>Create New Chat</Text>
@@ -216,8 +216,17 @@ export default function Index() {
 
         <SafeAreaView style={stylesheet.showAllChatsContainer} pointerEvents="box-none">
           <View style={stylesheet.container}>
-            <TouchableOpacity style={stylesheet.showAllChatsButton} onPress={onPressShowChats}>
-              <Image style={stylesheet.fitImage} source={require("@/assets/app/PLACEHOLDER.png")}/>
+            <TouchableOpacity 
+              style={[
+                stylesheet.showAllChatsButton, 
+                showingChats ? {paddingRight: 10,} : {paddingLeft: 10,}
+              ]} 
+              onPress={onPressShowChats}
+            >
+              <Image 
+                style={stylesheet.fitImage} 
+                source={showingChats ? theme.assets.leftArrow : theme.assets.rightArrow}
+              />
             </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -262,7 +271,7 @@ const ChatOption = ({name, chatId, chatOptions, isChangingName, onPress, onChang
               onContextPress(chatId);
             }}
           > 
-            <Image style={stylesheet.fitImage} source={require("@/assets/app/PLACEHOLDER.png")}/>
+            <Image style={stylesheet.fitImage} source={theme.assets.info}/>
           </ContextMenu>
         </TouchableOpacity>
         

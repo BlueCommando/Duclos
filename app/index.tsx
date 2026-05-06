@@ -61,8 +61,12 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
-    useChatLogStore.getState().loadChatLogs();
-    useSettingsStore.getState().loadUserSettings();
+    (async () => {
+      console.log("loading user data")
+      await useChatLogStore.getState().loadChatLogs();
+      await useSettingsStore.getState().loadUserSettings();
+      console.log("user data inited!")
+    })()
   }, []);
 
   const theme = useTheme();
@@ -75,14 +79,14 @@ export default function HomeScreen() {
           scale = {100}
           finalRotation={40}
           duration = {1000} 
-          source = {require("@/assets/app/logo/GreenBlock.png")}
+          source = {require("@/assets/images/GreenBlock.png")}
         />
         <LogoBox 
           xPosOffset={50}
           scale = {100}
           finalRotation={25}
           duration = {1000} 
-          source = {require("@/assets/app/logo/BlueBlock.png")}
+          source = {require("@/assets/images/BlueBlock.png")}
         />
         <LogoBox 
           xPosOffset={0}
@@ -90,7 +94,7 @@ export default function HomeScreen() {
           scale = {100}
           finalRotation={-25}
           duration = {1000} 
-          source = {require("@/assets/app/logo/PinkBlock.png")}
+          source = {require("@/assets/images/PinkBlock.png")}
         />
 
         <IntroText

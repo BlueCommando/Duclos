@@ -21,7 +21,18 @@ export interface ColorScheme {
   mode: "light" | "dark",
   
   assets: {
-    loadingCirclePath: ImageSourcePropType,
+    chat: ImageSourcePropType,
+    imagery: ImageSourcePropType,
+    settings: ImageSourcePropType,
+    loadingCircle: ImageSourcePropType,
+    upArrow: ImageSourcePropType,
+    downArrow: ImageSourcePropType,
+    rightArrow: ImageSourcePropType,
+    leftArrow: ImageSourcePropType,
+    check: ImageSourcePropType,
+    plus: ImageSourcePropType,
+    info: ImageSourcePropType,
+    trash: ImageSourcePropType,
   },
 
   opposite: ColorScheme,
@@ -44,7 +55,18 @@ export const lightColors: ColorScheme = {
   },
   
   assets: {
-    loadingCirclePath: require("@/assets/images/loading/DarkLoadingCircle.png"),
+    chat: require("@/assets/images/DarkChat.png"),
+    imagery: require("@/assets/images/DarkImage.png"),
+    settings: require("@/assets/images/DarkSettings.png"),
+    upArrow: require("@/assets/images/DarkUpArrow.png"),
+    downArrow: require("@/assets/images/DarkDownArrow.png"),
+    rightArrow: require("@/assets/images/DarkRightArrow.png"),
+    leftArrow: require("@/assets/images/DarkLeftArrow.png"),
+    check: require("@/assets/images/Check.png"),
+    plus: require("@/assets/images/DarkPlus.png"),
+    info: require("@/assets/images/DarkInfo.png"),
+    loadingCircle: require("@/assets/images/DarkLoadingCircle.png"),
+    trash: require("@/assets/images/Trash.png"),
   },
 
   statusBarStyle: "dark-content" as const,
@@ -68,7 +90,18 @@ export const darkColors: ColorScheme = {
   },
 
   assets: {
-    loadingCirclePath: require("@/assets/images/loading/LightLoadingCircle.png"),
+    chat: require("@/assets/images/LightChat.png"),
+    imagery: require("@/assets/images/LightImage.png"),
+    settings: require("@/assets/images/LightSettings.png"),
+    upArrow: require("@/assets/images/LightUpArrow.png"),
+    downArrow: require("@/assets/images/LightDownArrow.png"),
+    rightArrow: require("@/assets/images/LightRightArrow.png"),
+    leftArrow: require("@/assets/images/LightLeftArrow.png"),
+    check: require("@/assets/images/Check.png"),
+    plus: require("@/assets/images/LightPlus.png"),
+    info: require("@/assets/images/LightInfo.png"),
+    loadingCircle: require("@/assets/images/LightLoadingCircle.png"),
+    trash: require("@/assets/images/Trash.png"),
   },
 
   statusBarStyle: "light-content" as const,
