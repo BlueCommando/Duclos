@@ -2,6 +2,7 @@ import appSettings from '@/assets/appSettings';
 import { createChatInputStyle } from '@/assets/styles/components/app/chatInput.style';
 import { imageryLocalParams } from '@/assets/styles/imagery/ImageryLocalParam';
 import generateUniqueString from '@/components/other/GenerateUniqueString';
+import { useSettingsStore } from '@/components/userData/UserSettings';
 import useTheme from '@/hooks/useTheme';
 import { router } from 'expo-router';
 import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
@@ -12,6 +13,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import Toast from 'react-native-simple-toast';
 import { create } from "zustand";
 import AiService from '../ai/AiService';
+import { messageFormat } from './Chat';
 
 // Help with zustand:
 // https://zustand.docs.pmnd.rs/learn/getting-started/introduction#installation
@@ -50,7 +52,7 @@ export type ChatSentMessageExample = {
 };
 
 export type ChatInputRef = {
-  genAisResponse: () => Promise<string>,
+  genAisResponse: (allMessages: messageFormat[]) => Promise<string>,
   canSendMessages: (state: boolean) => void,
 };
 
@@ -76,7 +78,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>((props, ref) => {
 
   const maxInputHeight = stylesheet.container.maxHeight;
 
-  const genAisResponse = async () => {
+  const genAisResponse = async (allMessages: messageFormat[]) => {
     const images = [];
 
     for (var i = 0; i < chatSend.images.length; i++) {
@@ -90,24 +92,72 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>((props, ref) => {
       })
     }
 
-    const response = await AiService.imageCompletion({
+    const settingsStore = useSettingsStore.getState();
+
+    let pastMessages = "The Following is the history of a conversation between you and the user:\n";
+    let readMessages = 0;
+
+    if (settingsStore.settings.conversationContext){
+      for (var i = allMessages.length - 1; i >= 0; i--) {
+        if (readMessages >= appSettings.ai.rereadPastMessagesLimit) break;
+
+        const message = allMessages[i];
+
+        if (message.type !== "text") continue;
+
+        const role = message.role === "receiver" 
+          && "You" 
+          || message.role === "sender" 
+          && "User" 
+          || "Unknown";
+
+        const dateClass = new Date(message.time);
+        const unix = message.time / 1000;
+        const day = dateClass.getDate();
+        const month = dateClass.toLocaleString("default", { month: "short" });
+        const year = dateClass.getFullYear();
+        const hours = (dateClass.getHours() + 11) % 12 + 1;
+        const minutes = String(Math.floor(unix / 60 % 60)).padStart(2, "0");
+        const AMPM = dateClass.getHours() < 12 ? 'AM' : 'PM';
+        const fullTime = `${month} ${day} ${year}, ${hours}:${minutes} ${AMPM}`;
+
+        pastMessages += `Role: ${role}\nTime: ${fullTime}\nText: ${message.content}\n\n`
+        readMessages++;
+      }
+    }
+
+    const response = AiService.imageCompletion({
       messages: [
+        {
+          role: "administrator",
+          content: [
+            ...(
+              readMessages !== 0 && [{
+                type: "text",
+                text: pastMessages,
+              }] || []
+            ),
+          ],
+        },
         {
           role: "user",
           content: [
+            ...images,
             ...(
               chatSend.text.trim() !== "" && [{
                 type: "text",
                 text: chatSend.text,
               }] || []
             ),
-            ...images,
           ],
-        }
+        },
       ],
     });
 
-    return response.text;
+    changeChatSend({text: "", images: []});
+    setTextHeight(stylesheet.container.height);
+
+    return (await response).text;
   }
 
   useImperativeHandle(ref, () => ({
@@ -168,7 +218,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>((props, ref) => {
                 >
                   <Image 
                     style={stylesheet.image} 
-                    source={require("@/assets/app/PLACEHOLDER.png")}
+                    source={theme.assets.trash}
                   />
                 </TouchableOpacity>
               </View>
@@ -193,6 +243,7 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>((props, ref) => {
             setTextHeight(Math.max(e.nativeEvent.contentSize.height, stylesheet.container.height));
           }}
           multiline={true}
+          placeholderTextColor={theme.textPlaceholderColor}
           placeholder="Click to type a Message to AI"
         />
       </View>
@@ -210,7 +261,6 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>((props, ref) => {
         onSend(finalMessage);
 
         changeLocalText("");
-        changeChatSend({text: "", images: []});
       }}/>
     </View>
   )
@@ -313,7 +363,7 @@ const ChatAttach = ({uniqueId, attachmentCount, onAttach}: ChatAttackProps) => {
         >
           <Image 
             style={stylesheet.image} 
-            source={require("@/assets/app/PLACEHOLDER.png")}
+            source={theme.assets.plus}
           />
         </ContextMenu>
       </View>
@@ -333,7 +383,7 @@ const ChatSend = ({onPress}: ChatSendProps) => {
     <View style={stylesheet.centerContainer}>
       <View style={stylesheet.sendView}>
         <TouchableOpacity style={stylesheet.sendTouchOpacity} onPress={onPress}>
-          <Image style={stylesheet.image} source={require("@/assets/app/PLACEHOLDER.png")}/>
+          <Image style={stylesheet.image} source={theme.assets.rightArrow}/>
         </TouchableOpacity>
       </View>
     </View>

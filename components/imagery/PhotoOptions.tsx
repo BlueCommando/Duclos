@@ -30,8 +30,16 @@ const PhotoOptions = ({style, header, text, onPressBack, onPressForward, childre
     </SafeAreaView>
 
     <View style={stylesheet.bottomBar}>
-      <SinglePhotoOption onPress={onPressBack}/>
-      <SinglePhotoOption onPress={onPressForward}/>
+      <SinglePhotoOption 
+        onPress={onPressBack} 
+        source={theme.assets.leftArrow} 
+        style={{padding: 10, paddingRight: 15,}}
+      />
+      <SinglePhotoOption 
+        onPress={onPressForward} 
+        source={theme.assets.rightArrow}
+        style={{padding: 10, paddingLeft: 15,}}
+      />
     </View>
   </>
   )
@@ -42,12 +50,13 @@ const createPhotoOptionStyle = (color: ColorScheme) => {
     mainContainer: {
       flex: 1,
       alignItems: "center",
+      backgroundColor: color.subBackground,
     },
 
     childrenContainer: {
       width: "100%",
       height: 600,
-      backgroundColor: color.opposite.background,
+      backgroundColor: color.lowerBackground,
       marginTop: 10,
       marginBottom: 25, 
     },
@@ -68,11 +77,13 @@ const createPhotoOptionStyle = (color: ColorScheme) => {
       textAlign: "center",
       fontSize: 25,
       marginBottom: 10,
+      color: color.textColor,
     },
 
     text: {
       textAlign: "center",
       fontSize: 15,
+      color: color.textColor,
     }
   })
 

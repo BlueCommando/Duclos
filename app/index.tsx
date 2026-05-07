@@ -2,11 +2,13 @@ import AiService from '@/components/ai/AiService';
 import IntroText from '@/components/screens/loadingScreen/IntroText';
 import LoadingBar from '@/components/screens/loadingScreen/LoadingBar';
 import LogoBox from '@/components/screens/loadingScreen/LogoBox';
+import { useChatLogStore } from '@/components/userData/UserChatLogs';
+import { useSettingsStore } from '@/components/userData/UserSettings';
 import useTheme from '@/hooks/useTheme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, BackHandler, StatusBar } from 'react-native';
+import { Alert, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
@@ -49,7 +51,7 @@ export default function HomeScreen() {
       }
 
       // Change to main thing
-      setTimeout(() => router.push("./modes"), 3000);
+      setTimeout(() => router.replace("./modes"), 3000);
     }
 
     setTimeout(() => {
@@ -58,12 +60,18 @@ export default function HomeScreen() {
     }, 2000)
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      console.log("loading user data")
+      await useChatLogStore.getState().loadChatLogs();
+      await useSettingsStore.getState().loadUserSettings();
+      console.log("user data inited!")
+    })()
+  }, []);
+
   const theme = useTheme();
 
   return (
-  <>
-    <StatusBar barStyle={theme.statusBarStyle}/>
-
     <LinearGradient colors={theme.gradients.background} style={{flex: 1}}>
       <SafeAreaView style={{ flex: 1 }}>
         <LogoBox 
@@ -71,14 +79,14 @@ export default function HomeScreen() {
           scale = {100}
           finalRotation={40}
           duration = {1000} 
-          source = {require("@/assets/app/logo/GreenBlock.png")}
+          source = {require("@/assets/images/GreenBlock.png")}
         />
         <LogoBox 
           xPosOffset={50}
           scale = {100}
           finalRotation={25}
           duration = {1000} 
-          source = {require("@/assets/app/logo/BlueBlock.png")}
+          source = {require("@/assets/images/BlueBlock.png")}
         />
         <LogoBox 
           xPosOffset={0}
@@ -86,7 +94,7 @@ export default function HomeScreen() {
           scale = {100}
           finalRotation={-25}
           duration = {1000} 
-          source = {require("@/assets/app/logo/PinkBlock.png")}
+          source = {require("@/assets/images/PinkBlock.png")}
         />
 
         <IntroText
@@ -106,6 +114,5 @@ export default function HomeScreen() {
         )}
       </SafeAreaView>
     </LinearGradient>
-  </>
   )
 }

@@ -17,7 +17,7 @@ const TestChat = () => {
             type: "image",
             image: {
               type: "base64",
-              content: await AiService.imageToBase64(require("@/assets/app/PLACEHOLDER.png")),
+              content: await AiService.imageToBase64(require("@/assets/images/PLACEHOLDER.png")),
             },
           },
           {

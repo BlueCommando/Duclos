@@ -1,82 +1,302 @@
-import AiService from '@/components/ai/AiService';
-import { router, useFocusEffect } from 'expo-router';
-import { useState } from 'react';
-import { Image, Text, TextInput } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { createChatModeStyle } from '@/assets/styles/chat/chatMode.style';
+import { Chat, ChatRef, messageFormat } from '@/components/app/Chat';
+import genUniqueStr from '@/components/other/GenerateUniqueString';
+import hexToRgba from '@/components/other/HexToRGBA';
+import { chatLogs, useChatLogStore } from '@/components/userData/UserChatLogs';
+import useTheme from '@/hooks/useTheme';
+import { useEffect, useRef, useState } from 'react';
+import { Alert, Animated, Dimensions, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import ContextMenu, { ContextMenuAction } from 'react-native-context-menu-view';
+import RNFS from 'react-native-fs';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { create } from "zustand";
 
-const test = async (msg: string) => {
-  await AiService.init({
-    downloadModel: res => {
-      console.log("AI Model Download:", res.bytesWritten / res.contentLength)
-    },
-    downloadMMProj: res => {
-      console.log("MMProj Download:", res.bytesWritten / res.contentLength)
-    },
-    initModel: alpha => {
-      console.log("initing AI Model:", alpha)
-    },
-  });
+type ChatStore = {
+  currentChatId: number
+  changeCurrentChatId: (chatId: number) => void,
+};
 
-  const response = await AiService.textCompletion({
-    messages: [
-      {
-        role: "user",
-        content: msg,
-      }
+export const useChatStore = create<ChatStore>(set => ({
+  currentChatId: -1,
 
-      /*
-      {
-        role: "user",
-        content: [
-          {
-            type: "image_url",
-            image_url: {
-              url: pathToQuestion,
-            },
-          }
-        ],
-      },
-      {
-        role: "system",
-        content: "Your job is to solve the problem from the given image."
-      },
-      */
-    ]
-  })
-
-  console.log("Response complete!")
-  return response.text
-  //*/
-}
+  changeCurrentChatId: (chatId) => {
+    set(state => {
+      return {...state, currentChatId: chatId}
+    })
+  },
+}));
 
 export default function Index() {
-  const [msg, changeMsg] = useState("")
+  const chatRef = useRef<ChatRef>(null);
+  const chatLogStore = useChatLogStore.getState();
 
-  const handleMsg = async () => {
-    if (msg.trim() === "") return;
-    console.log(`${msg}\n\n`);
-    console.log(await test(msg));
+  const [showingChats, changeShowingChats] = useState(false);
+  const [chatNameChangingId, changeChatNameChangingId] = useState(-1);
+
+  const theme = useTheme();
+  const stylesheet = createChatModeStyle(theme);
+
+  // Funcs
+  const onPressShowChats = () => {
+    changeShowingChats(prev => !prev);
   }
 
-  //useFocusEffect(() => router.replace({pathname: "/screens/imagery/TestChat",}))
+  const switchChat = (chatId: number, newChatLogs?: chatLogs) => {
+    const chatStore = useChatStore.getState();
+
+    changeShowingChats(false);
+    chatStore.changeCurrentChatId(chatId);
+    chatRef.current?.setAllMessages((newChatLogs || chatLogStore.chatLogs)[chatId].logs);
+  }
+
+  const createNewChat = () => {
+    const chatStore = useChatStore.getState();
+    const newId = chatLogStore.chatLogs.length;
+
+    const newChatLogs = [...chatLogStore.chatLogs, {
+      name: `Chat: #${newId + 1}`,
+      logs: [],
+    }];
+
+    chatLogStore.saveChatLogs(newChatLogs);
+    chatStore.changeCurrentChatId(newId);
+    switchChat(newId, newChatLogs);
+
+    return {chatLogs: newChatLogs, id: newId};
+  }
+
+  const deleteChat = (chatId: number) => {
+    Alert.alert(
+      "Confirmation:", 
+      `Are you sure you want to delete the chat '${chatLogStore.chatLogs[chatId].name}'?\n\nThis action is irreversible.`,
+      [
+        {
+          text: "YES", 
+          onPress: () => {
+            /*
+            const chatStore = useChatStore.getState();
+
+            if (chatStore.currentChatId === chatId){
+              chatRef.current?.setAllMessages([]);
+              chatStore.changeCurrentChatId(-1);
+            }
+            */
+
+            const logs = chatLogStore.chatLogs[chatId].logs;
+
+            for (var i = 0; i < logs.length; i++) {
+              const v = logs[i];
+              if (v.type !== "image") continue;
+              RNFS.unlink(v.content);
+            }
+
+            const newChatLogs = chatLogStore.chatLogs.filter((_, i) => chatId !== i);
+            chatLogStore.saveChatLogs(newChatLogs);
+        }},
+
+        {text: "NO"},
+      ]
+    )
+  }
+
+  const onNewMessage = (msg: messageFormat) => {
+    const chatStore = useChatStore.getState();
+
+    let id = chatStore.currentChatId;
+    let chatLogs: chatLogs = chatLogStore.chatLogs
+
+    if (id === -1){
+      const chatInfo = createNewChat();
+      id = chatInfo.id;
+      chatLogs = chatInfo.chatLogs;
+    };
+
+    const newChatLogs = [...chatLogs];
+    newChatLogs[id].logs.push(msg);
+    chatLogStore.saveChatLogs(newChatLogs);
+  }
+
+  useEffect(() => {
+    const chatStore = useChatStore.getState();
+
+    if (chatStore.currentChatId === -1) return;
+
+    if (!(chatStore.currentChatId in chatLogStore.chatLogs)){
+      chatRef.current?.setAllMessages([]);
+      chatStore.changeCurrentChatId(-1);
+    }
+  }, [useChatLogStore()]);
+
+  // User Chat Options
+  const chatOptions = [
+    {
+      title: "Rename Chat",
+      onPress: changeChatNameChangingId,
+    },
+    {
+      title: "Delete Chat",
+      onPress: deleteChat,
+    },
+  ]
+
+  // Animating Chats
+  const screenWidth = Dimensions.get("window").width;
+  const goalWidth = screenWidth * 0.6;
+  const widthAnim = useRef(new Animated.Value(0)).current;
+
+  const width = widthAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: showingChats ? [0, goalWidth] : [goalWidth, 0],
+  });
+
+  useEffect(() => {
+    widthAnim.setValue(0);
+
+    Animated.timing(widthAnim, {
+      toValue: 1,
+      duration: 100,
+      useNativeDriver: false,
+    }).start();
+  }, [showingChats]);
+
+  // Background Transparency
+  const chooseChatContainer = showingChats && { 
+    backgroundColor: hexToRgba(theme.lowerBackground, 0.5),
+  } || {};
+
+  const currentChatId = useChatStore(state => state.currentChatId);
 
   return (
-    <SafeAreaView>
-      <Text>Edit app/index.tsx to edit this screen.</Text>
-      <Text>I'm just like wally west!</Text>
-       <TextInput
-          onChangeText={changeMsg}
-          onSubmitEditing={handleMsg}
+    <View style={stylesheet.mainContainer}>
+      <SafeAreaView style={stylesheet.container} edges={["top"]}>
+        <Chat ref={chatRef} onNewMessage={onNewMessage} showNoMessagesText={currentChatId === -1}/>
+      </SafeAreaView>
 
-          placeholder='test'
-          style={{fontSize: 20}}
-        />
-      
-      <Image
-        source={require("@/assets/app/questions/q2.png")}
-        
-        style={{ width: 400, height: 200 }}
-      />
-    </SafeAreaView>
+      <View style={[stylesheet.chooseChatContainer, chooseChatContainer]}>
+        <Animated.View style={[stylesheet.allChatsView, {width: width}]}>
+          {showingChats ? 
+            <SafeAreaView style={[stylesheet.container, {gap: 10}]} edges={["top"]}>
+              <TouchableOpacity style={stylesheet.chatOption} onPress={createNewChat}>
+                <View style={stylesheet.createChatButton}> 
+                  <Image style={stylesheet.fitImage} source={theme.assets.chat}/>
+                </View>
+
+                <Text style={stylesheet.chatOptionText}  numberOfLines={1}>Create New Chat</Text>
+              </TouchableOpacity>
+
+              <View style={{height: 5}}/>
+
+              <ScrollView>
+                <View style={stylesheet.chatOptionsView}>{
+                  chatLogStore.chatLogs?.map((v, i) => {
+                    return <ChatOption
+                      name={v.name}
+                      chatId={i}
+                      onPress={() => {
+                        switchChat(i);
+                        changeShowingChats(false);
+                      }}
+                      onChangedName={(t) => {
+                        changeChatNameChangingId(-1);
+
+                        const newChatLogs = [...chatLogStore.chatLogs];
+                        newChatLogs[i].name = t;
+                        chatLogStore.saveChatLogs(newChatLogs);
+                      }}
+                      isChangingName={chatNameChangingId === i}
+                      chatOptions={chatOptions}
+                      key={genUniqueStr(8)}
+                    />
+                  })
+                }</View>
+              </ScrollView>
+            </SafeAreaView> : null
+          }
+        </Animated.View>
+
+        <SafeAreaView style={stylesheet.showAllChatsContainer} pointerEvents="box-none">
+          <View style={stylesheet.container}>
+            <TouchableOpacity 
+              style={[
+                stylesheet.showAllChatsButton, 
+                showingChats ? {paddingRight: 10,} : {paddingLeft: 10,}
+              ]} 
+              onPress={onPressShowChats}
+            >
+              <Image 
+                style={stylesheet.fitImage} 
+                source={showingChats ? theme.assets.leftArrow : theme.assets.rightArrow}
+              />
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </View>
+    </View>
   );
+}
+
+type ChatOptionProps = {
+  name: string,
+  chatId: number,
+  chatOptions: (ContextMenuAction & { onPress?: (chatId: number) => void })[],
+  isChangingName?: boolean,
+  onPress?: () => void,
+  onChangedName?: (text: string) => void,
+}
+
+const ChatOption = ({name, chatId, chatOptions, isChangingName, onPress, onChangedName}: ChatOptionProps) => {
+  const theme = useTheme();
+  const stylesheet = createChatModeStyle(theme);
+
+  const [newChatName, changeNewChatName] = useState(name);
+  const inputRef = useRef<TextInput>(null);
+
+  useEffect(() => {
+    if (!isChangingName) return;
+    inputRef.current?.focus();
+  }, [isChangingName])
+
+  return (
+    <View style={stylesheet.chatOption}>
+      <TouchableOpacity style={stylesheet.chatOption} onPress={onPress}>
+        <TouchableOpacity style={stylesheet.createChatButton} >
+          <ContextMenu 
+            style={stylesheet.createChatButton} 
+            actions={chatOptions}
+            dropdownMenuMode={true}
+            onPress={(e) => {
+              if (!chatOptions) return;
+              const onContextPress = chatOptions[e.nativeEvent.index].onPress;
+              if (!onContextPress) return;
+              onContextPress(chatId);
+            }}
+          > 
+            <Image style={stylesheet.fitImage} source={theme.assets.info}/>
+          </ContextMenu>
+        </TouchableOpacity>
+        
+        <View style={stylesheet.container} pointerEvents="none">{
+          isChangingName ? <TextInput 
+            ref={inputRef}
+            value={newChatName}
+            onChangeText={changeNewChatName}
+            onBlur={() => {
+              if (!onChangedName) return;
+              let finalName = newChatName.trim();
+              if (finalName === "") finalName = "[NO-NAME]";
+              changeNewChatName(finalName);
+              onChangedName(finalName);
+            }}
+            selectTextOnFocus={false}
+            style={stylesheet.chatOptionText} 
+            numberOfLines={1}
+          /> : <Text
+            adjustsFontSizeToFit 
+            minimumFontScale={0.7}
+            style={stylesheet.chatOptionText} 
+          >{newChatName}</Text>
+        }</View>
+      </TouchableOpacity>
+    </View>
+  )
 }

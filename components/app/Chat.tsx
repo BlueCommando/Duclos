@@ -36,7 +36,7 @@ import ChatInput, { ChatInputRef, ChatSentMessageExample } from './ChatInput';
 
 type allMessagesFormat = messageFormat[];
 
-type messageFormat = {
+export type messageFormat = {
   role: "sender" | "receiver",
   type: "text" | "image" | "loading",
   content: string,
@@ -127,11 +127,13 @@ export type ChatRef = {
   createLoadingText: () => void,
   destroyLoadingText: () => void,
   getAllMessages: () => allMessagesFormat,
+  setAllMessages: (messages: allMessagesFormat) => void,
   deleteAllImages: () => void,
 };
 
 type ChatProps = {
-  
+  showNoMessagesText?: boolean,
+  onNewMessage?: (msg: messageFormat) => void,
 };
 
 export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
@@ -194,6 +196,12 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     }
 
     changeAllMessages(prev => [...prev, ...finalMessage]);
+
+    if (props.onNewMessage){
+      for (var i = 0; i < finalMessage.length; i++) {
+        props.onNewMessage(finalMessage[i]);
+      }
+    }
   };
 
   const deleteAllImages = async () => {
@@ -208,12 +216,14 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
   const destroyLoadingText = () => changeLoadingMessage(false);
 
   const getAllMessages = () => allMessages;
+  const setAllMessages = (m: allMessagesFormat) => changeAllMessages(m);
 
   useImperativeHandle(ref, () => ({
     createMessage,
     createLoadingText,
     destroyLoadingText,
     getAllMessages,
+    setAllMessages,
     deleteAllImages,
   }));
 
@@ -237,7 +247,7 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
       })
     }
 
-    createMessage({
+    await createMessage({
       role: "sender",
       content: [
         ...userImages,
@@ -251,9 +261,9 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
     setTimeout(() => createLoadingText(), 1000);
 
     // Ai's response
-    const response = await chatInputRef.current.genAisResponse();
+    const response = await chatInputRef.current.genAisResponse(allMessages);
 
-    createMessage({
+    await createMessage({
       role: "receiver",
       content: [
         {
@@ -291,17 +301,21 @@ export const Chat = forwardRef<ChatRef, ChatProps>((props, ref) => {
             )
           })}
 
-          {loadingMessage && (
+          {loadingMessage ? (
             <Bubble 
               message={{type: "loading", role: "receiver", content: "NULL", time: Date.now(),}}
               key={generateUniqueString(8)}
             />
-          )}
+          ) : null}
         </View>
       </ScrollView>
 
+      {(allMessages.length === 0 && props.showNoMessagesText) ? (
+        <Text style={stylesheet.noMessagesText}>{`Type a Message to create a new Chat.\nOr go to an old Chat.`}</Text>
+      ): null}
+
       {/*Chat Input*/}
-      <SafeAreaView edges={["bottom"]}>
+      <SafeAreaView style={stylesheet.safeChatInputView} edges={["bottom"]}>
         <ChatInput
           ref={chatInputRef}
           onSend={onSend}
@@ -447,7 +461,7 @@ const Bubble = ({message}: BubbleProps) => {
               <LoadingBubble offsetAlpha={0.66}/>
             </View>
 
-          : <Text>'MESSAGE.TYPE' IS AT AN UNKNOWN VALUE. PLEASE REPORT!</Text>
+          : <Text>'MESSAGE.TYPE' IS '{message.type}'. PLEASE REPORT!</Text>
         }
       </View>
 
@@ -475,7 +489,7 @@ const Bubble = ({message}: BubbleProps) => {
           >
             <Image 
               style={stylesheet.bubbleInfoButtonImage} 
-              source={require("@/assets/app/PLACEHOLDER.png")}
+              source={theme.assets.info}
             />
           </ContextMenu>
         </View>

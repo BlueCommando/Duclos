@@ -11,7 +11,7 @@ export const createPromptScreenStyle = (colors: ColorScheme) => {
       flex: 1,
       flexDirection: "row",
       fontSize: 20,
-      color: colors.opposite.textColor,
+      color: colors.textColor,
       margin: 10,
     },
   });

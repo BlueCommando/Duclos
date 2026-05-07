@@ -24,6 +24,7 @@ export const createChatInputStyle = (colors: ColorScheme) => {
       flex: 1,
       paddingLeft: 20,
       paddingRight: 20,
+      color: colors.textColor,
       backgroundColor: colors.subBackground,
       fontWeight: "500",
     },
@@ -58,15 +59,19 @@ export const createChatInputStyle = (colors: ColorScheme) => {
       alignSelf: "flex-end",
       width: "50%",
       height: "50%",
-      backgroundColor: "#ffffff",
+      borderRadius: "50%",
+      overflow: "hidden",
+      backgroundColor: colors.opposite.background,
     },
 
     attachImageView: {
       maxHeight: 50,
-      height: 50,
+      height: "100%",
       aspectRatio: 1,
       borderRadius: "50%",
       overflow: "hidden",
+      backgroundColor: colors.subBackground, 
+      padding: 5,
     },
 
     centerContainer: {
@@ -76,7 +81,7 @@ export const createChatInputStyle = (colors: ColorScheme) => {
 
     sendView: {
       maxHeight: 50,
-      height: 50,
+      height: "100%",
       borderRadius: "50%",
       aspectRatio: 1,
       overflow: "hidden",
@@ -85,6 +90,8 @@ export const createChatInputStyle = (colors: ColorScheme) => {
 
     sendTouchOpacity: {
       flex: 1,
+      padding: 5,
+      paddingLeft: 10,
       backgroundColor: "#2294fb",
       color: "#000"
     },

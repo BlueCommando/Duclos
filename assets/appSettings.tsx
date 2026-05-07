@@ -6,25 +6,33 @@ export default {
     minDeviceFreeBytesRAM: 6 * Math.pow(10, 9)
   },
 
+  user: {
+    userChatLogsAsyncKey: "_userChatLogs",
+  },
+
   text: {
     attachmentLimit: 5,
   },
 
   imagery: {},
 
-  settings: {},
+  settings: {
+    userSettingsAsyncKey: "_userSettings",
+  },
 
   ai: {
+    rereadPastMessagesLimit: 10,
+
     text_n_perdict: 1024,
     imagery_n_predict: 1024,
 
     universalCompletionMessage: [
       {
-        role: "system",
+        role: "administrator",
         content: "You are an AI assistant talking to the user."
       },
       {
-        role: "system",
+        role: "administrator",
         content: `
 Always solve the problems using the following structure:
 
@@ -49,14 +57,14 @@ Rules:
 
     textCompletionMessage: [
       {
-        role: "system",
+        role: "administrator",
         content: `Do not interpret or reference images. Respond using text only.`,
       },
     ],
 
     imageCompletionMessage: [
       {
-        role: "system",
+        role: "administrator",
         content: `You have vision capabilities. You can analyze and describe images when provided.`,
       },
     ],

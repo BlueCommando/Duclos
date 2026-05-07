@@ -3,10 +3,11 @@ import NetInfo from "@react-native-community/netinfo";
 import { Asset } from 'expo-asset';
 import { File } from 'expo-file-system';
 import { CompletionParams, initLlama, LlamaContext, NativeCompletionResult } from 'llama.rn';
-import { Alert, BackHandler, ImageSourcePropType } from 'react-native';
+import { Alert, BackHandler } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import RNFS, { DownloadProgressCallbackResult } from 'react-native-fs';
 import AiFileCheck from './AiFileCheck';
+import { useSettingsStore } from '../userData/UserSettings';
 
 // Help with llama.rn:
 // https://github.com/mybigday/llama.rn/blob/main/README.md
@@ -49,13 +50,18 @@ class AiService{
      * Alerts the user that they're below the free RAM requirements 
      * and confirms if they want to continue.
     */
-    private async userMinRamConfirmation(): Promise<boolean> {
+    private async userMinRamConfirmation(): Promise<boolean> { 
+      const deviceState = await this.getDeviceState();
+
       const minFreeRamGigs = appSettings.device.minDeviceFreeBytesRAM / Math.pow(10, 9);
+      const freeRamGigs = Math.floor(deviceState.freeRAM / Math.pow(10, 9) * 100) / 100;
+
+      console.log(freeRamGigs);
 
       return new Promise<boolean>((resolve) => {
         Alert.alert(
           "Confirmation:",
-          `You don't have the recommended amount of free RAM (${minFreeRamGigs}GB).\n\nDo you wish to continue?`,
+          `You don't have the recommended amount of free RAM (${minFreeRamGigs}GB).\n\n(You have ${freeRamGigs}GB.)\n\nDo you wish to continue?`,
           [
             { text: "YES", onPress: () => resolve(true) },
             { text: "NO", onPress: () => {
@@ -206,6 +212,11 @@ class AiService{
 
       // RAM Check:
       const deviceState = await this.getDeviceState();
+
+      const freeRamGigs = Math.floor(deviceState.freeRAM / Math.pow(10, 9) * 100) / 100;
+
+      console.log(freeRamGigs);
+
       if (deviceState.freeRAM < appSettings.device.minDeviceFreeBytesRAM){
         if (!(await this.userMinRamConfirmation())){
           return;
@@ -241,29 +252,55 @@ class AiService{
     }
 
     /** 
-     * Same as 'rawCompletion' but is instructed to be a chatbot.
+     * Same as 'userCompletion' but is instructed to be a chatbot.
      * 
      * (CAN'T READ IMAGES.)
     */
     async textCompletion(params: CompletionParams): Promise<NativeCompletionResult> {
       params.stop = appSettings.ai.stopWords;
       params.n_predict = appSettings.ai.text_n_perdict;
+
+      const settingsStore = useSettingsStore.getState();
+      if (!settingsStore.settings.systemCompletion) return this.userCompletion(params);
+
       params.messages = params.messages?.concat(appSettings.ai.universalCompletionMessage);
       params.messages = params.messages?.concat(appSettings.ai.textCompletionMessage);
-      return this.rawCompletion(params)
+      return this.userCompletion(params);
     }
 
     /** 
-     * Same as 'rawCompletion' but is instructed to be a imagebot.
+     * Same as 'userCompletion' but is instructed to be a imagebot.
      * 
      * (CAN READ IMAGES AND READ TEXT.)
     */
     async imageCompletion(params: CompletionParams): Promise<NativeCompletionResult> {
       params.stop = appSettings.ai.stopWords;
       params.n_predict = appSettings.ai.imagery_n_predict;
+
+      const settingsStore = useSettingsStore.getState();
+      if (!settingsStore.settings.systemCompletion) return this.userCompletion(params);
+
       params.messages = params.messages?.concat(appSettings.ai.universalCompletionMessage);
       params.messages = params.messages?.concat(appSettings.ai.imageCompletionMessage);
-      return this.rawCompletion(params)
+      return this.userCompletion(params);
+    }
+
+    /** 
+     * Same as 'rawCompletion' but the users settings can change the params.
+    */
+    async userCompletion(params: CompletionParams): Promise<NativeCompletionResult>{
+      const settingsStore = useSettingsStore.getState();
+
+      if (settingsStore.settings.prepromptedMessage){
+        params.messages = params.messages?.concat([
+          {
+            role: "administrator",
+            content: settingsStore.settings.prepromptedMessage,
+          },
+        ]);
+      }
+
+      return this.rawCompletion(params);
     }
 
     /** 
@@ -315,6 +352,24 @@ class AiService{
     */
     async removeImageBase64Prefix(base64: string){
       return base64.split(",")[1];
+    }
+
+    /** 
+     * Gets the AI's model name and MMProj name. (That's it.)
+    */
+    public getAiModelInfo(){
+      const info = {
+        aiModelName: "",
+        mmprojModelMame: "",
+      };
+      
+      const aiModelFullName = aiModelDownloadLink.split("/").pop();
+      info.aiModelName = aiModelFullName?.substring(0, aiModelFullName.lastIndexOf(".")) || "UNKNOWN AI MODEL";
+
+      const mmprojFullName =  aiMMProjDownloadLink.split("/").pop();
+      info.mmprojModelMame = mmprojFullName?.substring(0, mmprojFullName.lastIndexOf(".")) || "UNKNOWN MMPROJ MODEL";
+
+      return info;
     }
 
     async cleanUp(){

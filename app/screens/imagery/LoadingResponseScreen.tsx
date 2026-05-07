@@ -1,3 +1,4 @@
+import { imageryLocalParams } from '@/assets/styles/imagery/ImageryLocalParam';
 import { createLoadingResponseScreenStyle } from '@/assets/styles/imagery/LoadingResponseScreen.style';
 import AiService from '@/components/ai/AiService';
 import useTheme from '@/hooks/useTheme';
@@ -5,7 +6,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Image, ScrollView, Text, View } from 'react-native';
-import { imageryLocalParams } from '@/assets/styles/imagery/ImageryLocalParam';
 
 const loadingTextInitState = "GENERATING.";
 
@@ -119,7 +119,7 @@ const LoadingMessage = () => {
         <View style={stylesheet.loadingScreenView}>
           <View style={stylesheet.container}>
             <Animated.Image 
-              source={theme.assets.loadingCirclePath} 
+              source={theme.assets.loadingCircle} 
               style={[
                 stylesheet.fitImage, 
                 {

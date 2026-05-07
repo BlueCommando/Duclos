@@ -1,9 +1,7 @@
 import useTheme from '@/hooks/useTheme'
 import { Tabs } from 'expo-router'
 import React from 'react'
-import { Image, Text } from 'react-native'
-
-const placeholderImagePath = "@/assets/app/PLACEHOLDER.png"
+import { Image } from 'react-native'
 
 const modesLayout = () => {
   const colors = useTheme()
@@ -32,8 +30,8 @@ const modesLayout = () => {
           title: "Chat",
           tabBarIcon: ({size}) => (
             <Image
-              source={require(placeholderImagePath)}
-              style={{ width: size, height: size }}
+              source={colors.assets.chat}
+              style={{ width: 35, height: 35 }}
             />
           )
         }
@@ -46,8 +44,8 @@ const modesLayout = () => {
           title: "Imagery",
           tabBarIcon: ({size}) => (
             <Image
-              source={require(placeholderImagePath)}
-              style={{ width: size, height: size }}
+              source={colors.assets.imagery}
+              style={{ width: 35, height: 35 }}
             />
           )
         }
@@ -60,8 +58,8 @@ const modesLayout = () => {
           title: "Settings",
           tabBarIcon: ({size}) => (
             <Image
-              source={require(placeholderImagePath)}
-              style={{ width: size, height: size }}
+              source={colors.assets.settings}
+              style={{ width: 40, height: 40 }}
             />
           )
         }
