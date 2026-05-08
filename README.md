@@ -1,16 +1,16 @@
 <p align="center">
-  <img src="./assets/images/DuclosLogo.png" height="200px"><br>
-  <span style="font-size: 2rem; font-weight: bold;">DUCLOS</span><br>
-  <span style="font-size: 1.5rem; margin-left: 10px;">Offline AI Imagery App</span>
+    <img src="./assets/images/DuclosLogo.png" height="200px">
 </p>
 
----
+<h1 align="center">DUCLOS<br/><br/>An Offline AI Imagery App.</h1>
 
 <div align="center">
     <a href="https://github.com/BlueCommando/Duclos/releases">
         <img src="https://img.shields.io/github/v/release/BlueCommando/Duclos" alt="Release"/>
     </a>
-    <img src="https://img.shields.io/github/downloads/BlueCommando/Duclos/total?color=brightgreen&label=Total%20Downloads&style=flat" alt="Total Downloads"/>
+    <a href="https://github.com/BlueCommando/Duclos/releases">
+        <img src="https://img.shields.io/github/downloads/BlueCommando/Duclos/total?color=brightgreen&label=Total%20Downloads&style=flat" alt="Total Downloads"/>
+    </a>
     <a href="./LICENSE">
         <img src="https://img.shields.io/badge/LICENSE-MIT_LICENSE-blue" alt="MIT LICENSE"/>
     </a>
