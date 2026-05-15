@@ -14,6 +14,7 @@ import Toast from 'react-native-simple-toast';
 import { create } from "zustand";
 import AiService from '../ai/AiService';
 import { messageFormat } from './Chat';
+import { RNLlamaOAICompatibleMessage } from 'llama.rn';
 
 // Help with zustand:
 // https://zustand.docs.pmnd.rs/learn/getting-started/introduction#installation
@@ -126,38 +127,36 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>((props, ref) => {
       }
     }
 
-    const response = AiService.imageCompletion({
-      messages: [
-        {
-          role: "administrator",
-          content: [
-            ...(
-              readMessages !== 0 && [{
-                type: "text",
-                text: pastMessages,
-              }] || []
-            ),
-          ],
-        },
-        {
-          role: "user",
-          content: [
-            ...images,
-            ...(
-              chatSend.text.trim() !== "" && [{
-                type: "text",
-                text: chatSend.text,
-              }] || []
-            ),
-          ],
-        },
-      ],
-    });
+    const messages = [];
+
+    // Text is added first because the list is reversed in the completion.
+    if (chatSend.text.trim() !== ""){
+      messages.push({
+        role: "user",
+        content: [{
+          type: "text",
+          text: chatSend.text,
+        }],
+      });
+    }
+
+    if (readMessages !== 0){
+      messages.push({
+        role: "system",
+        content: [{
+          type: "text",
+          text: pastMessages,
+        }],
+      });
+    }
+
+    const response = AiService.imageCompletion({messages: messages,});
 
     changeChatSend({text: "", images: []});
     setTextHeight(stylesheet.container.height);
 
     return (await response).text;
+
   }
 
   useImperativeHandle(ref, () => ({

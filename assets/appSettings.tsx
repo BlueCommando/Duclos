@@ -28,11 +28,11 @@ export default {
 
     universalCompletionMessage: [
       {
-        role: "administrator",
+        role: "system",
         content: "You are an AI assistant talking to the user."
       },
       {
-        role: "administrator",
+        role: "system",
         content: `
 Always solve the problems using the following structure:
 
@@ -57,14 +57,14 @@ Rules:
 
     textCompletionMessage: [
       {
-        role: "administrator",
+        role: "system",
         content: `Do not interpret or reference images. Respond using text only.`,
       },
     ],
 
     imageCompletionMessage: [
       {
-        role: "administrator",
+        role: "system",
         content: `You have vision capabilities. You can analyze and describe images when provided.`,
       },
     ],

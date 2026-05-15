@@ -103,7 +103,7 @@ export default function Index() {
     const chatStore = useChatStore.getState();
 
     let id = chatStore.currentChatId;
-    let chatLogs: chatLogs = chatLogStore.chatLogs
+    let chatLogs: chatLogs = useChatLogStore.getState().chatLogs;
 
     if (id === -1){
       const chatInfo = createNewChat();

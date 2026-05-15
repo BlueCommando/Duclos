@@ -6,8 +6,8 @@ import { CompletionParams, initLlama, LlamaContext, NativeCompletionResult } fro
 import { Alert, BackHandler } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import RNFS, { DownloadProgressCallbackResult } from 'react-native-fs';
-import AiFileCheck from './AiFileCheck';
 import { useSettingsStore } from '../userData/UserSettings';
+import AiFileCheck from './AiFileCheck';
 
 // Help with llama.rn:
 // https://github.com/mybigday/llama.rn/blob/main/README.md
@@ -229,7 +229,7 @@ class AiService{
       this.context = await initLlama({
         model: aiModelDest,
         use_mlock: true,
-        n_ctx: 4096,
+        n_ctx: 2048,
         n_gpu_layers: 99,
         ctx_shift: false,
       }, progFuncs?.initModel );
@@ -294,7 +294,7 @@ class AiService{
       if (settingsStore.settings.prepromptedMessage){
         params.messages = params.messages?.concat([
           {
-            role: "administrator",
+            role: "system",
             content: settingsStore.settings.prepromptedMessage,
           },
         ]);
@@ -307,6 +307,8 @@ class AiService{
      * Sends the given messages to the AI with no pre-input instructions.
     */
     async rawCompletion(params: CompletionParams): Promise<NativeCompletionResult> {
+      params.messages = params.messages?.toReversed();
+
       try {
 
         if (!this.context){
