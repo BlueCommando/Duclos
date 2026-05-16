@@ -63,6 +63,7 @@ export const createLoadingResponseScreenStyle = (colors: ColorScheme) => {
     },
 
     loadingText: {
+      color: colors.textColor,
       fontWeight: "bold",
       fontSize: 20,
       textAlign: "center",

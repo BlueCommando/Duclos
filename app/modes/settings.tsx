@@ -20,8 +20,6 @@ const settings = () => {
 
   const aiModelInfo = AiService.getAiModelInfo();
 
-  console.log(settingsStore.loaded)
-
   if (!settingsStore.loaded) return <View/>;
 
   return (
@@ -35,9 +33,9 @@ const settings = () => {
             {/*User Pre-prompt*/}
             <View style={[stylesheet.basicSettingBox, stylesheet.columnSettingBox]}>
               <Text style={stylesheet.headerText}>Pre-prompted Message</Text>
-              <Text style={stylesheet.text}>
-                Prompts the typed message towards the AI on every prompt you do.
-              </Text>
+              <Text style={stylesheet.text}>{
+                `Prompts the typed message towards the AI on every prompt you do. (It's pre-prompted at the system level.)`
+              }</Text>
               <TextInput 
                 multiline={true}
                 submitBehavior="blurAndSubmit"

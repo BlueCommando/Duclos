@@ -12,11 +12,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { create } from "zustand";
 
 type ChatStore = {
-  currentChatId: number
+  creationPromise: Promise<{chatLogs: chatLogs, id: number}> | null,
+  currentChatId: number,
   changeCurrentChatId: (chatId: number) => void,
 };
 
 export const useChatStore = create<ChatStore>(set => ({
+  creationPromise: null,
+
   currentChatId: -1,
 
   changeCurrentChatId: (chatId) => {
@@ -32,6 +35,7 @@ export default function Index() {
 
   const [showingChats, changeShowingChats] = useState(false);
   const [chatNameChangingId, changeChatNameChangingId] = useState(-1);
+  const [creatingChat, changeCreatingChat] = useState(false);
 
   const theme = useTheme();
   const stylesheet = createChatModeStyle(theme);
@@ -49,7 +53,7 @@ export default function Index() {
     chatRef.current?.setAllMessages((newChatLogs || chatLogStore.chatLogs)[chatId].logs);
   }
 
-  const createNewChat = () => {
+  const createNewChat = async () => {
     const chatStore = useChatStore.getState();
     const newId = chatLogStore.chatLogs.length;
 
@@ -58,7 +62,7 @@ export default function Index() {
       logs: [],
     }];
 
-    chatLogStore.saveChatLogs(newChatLogs);
+    await chatLogStore.saveChatLogs(newChatLogs);
     chatStore.changeCurrentChatId(newId);
     switchChat(newId, newChatLogs);
 
@@ -99,16 +103,22 @@ export default function Index() {
     )
   }
 
-  const onNewMessage = (msg: messageFormat) => {
+  const onNewMessage = async (msg: messageFormat) => {
     const chatStore = useChatStore.getState();
 
     let id = chatStore.currentChatId;
     let chatLogs: chatLogs = useChatLogStore.getState().chatLogs;
 
     if (id === -1){
-      const chatInfo = createNewChat();
+      if (chatStore.creationPromise === null){
+        chatStore.creationPromise = createNewChat();
+      }
+
+      const chatInfo = await chatStore.creationPromise;
+
       id = chatInfo.id;
       chatLogs = chatInfo.chatLogs;
+      chatStore.creationPromise = null;
     };
 
     const newChatLogs = [...chatLogs];

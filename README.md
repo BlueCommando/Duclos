@@ -31,7 +31,17 @@ What the user can do
 ### HARDWARE RECOMMENDATIONS
 - **ANDROID ONLY** (ios isn't planned to be supported.)
 - 6GB of storage.
-- 6GB of RAM.
+- 8GB of RAM.
+
+---
+
+### PREVIEW
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=_bheJk74zWc">
+    <img src="https://img.youtube.com/vi/_bheJk74zWc/0.jpg" alt="Video Title">
+  </a>
+</p> 
 
 ---
 

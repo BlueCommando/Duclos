@@ -229,7 +229,7 @@ class AiService{
       this.context = await initLlama({
         model: aiModelDest,
         use_mlock: true,
-        n_ctx: 2048,
+        n_ctx: 4096,
         n_gpu_layers: 99,
         ctx_shift: false,
       }, progFuncs?.initModel );

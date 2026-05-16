@@ -14,7 +14,6 @@ import Toast from 'react-native-simple-toast';
 import { create } from "zustand";
 import AiService from '../ai/AiService';
 import { messageFormat } from './Chat';
-import { RNLlamaOAICompatibleMessage } from 'llama.rn';
 
 // Help with zustand:
 // https://zustand.docs.pmnd.rs/learn/getting-started/introduction#installation
@@ -80,19 +79,6 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>((props, ref) => {
   const maxInputHeight = stylesheet.container.maxHeight;
 
   const genAisResponse = async (allMessages: messageFormat[]) => {
-    const images = [];
-
-    for (var i = 0; i < chatSend.images.length; i++) {
-      const base64 = await AiService.imageToBase64(chatSend.images[i])
-
-      images.push({
-        type: "image_url",
-        image_url: {
-          url: base64,
-        },
-      })
-    }
-
     const settingsStore = useSettingsStore.getState();
 
     let pastMessages = "The Following is the history of a conversation between you and the user:\n";
@@ -140,6 +126,18 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>((props, ref) => {
       });
     }
 
+    for (var i = 0; i < chatSend.images.length; i++) {
+      const base64 = await AiService.imageToBase64(chatSend.images[i]);
+
+      messages.push({
+        role: "user",
+        content: [{
+          type: "image_url",
+          image_url: {url: base64},
+        }],
+      })
+    }
+
     if (readMessages !== 0){
       messages.push({
         role: "system",
@@ -156,7 +154,6 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>((props, ref) => {
     setTextHeight(stylesheet.container.height);
 
     return (await response).text;
-
   }
 
   useImperativeHandle(ref, () => ({
@@ -382,7 +379,7 @@ const ChatSend = ({onPress}: ChatSendProps) => {
     <View style={stylesheet.centerContainer}>
       <View style={stylesheet.sendView}>
         <TouchableOpacity style={stylesheet.sendTouchOpacity} onPress={onPress}>
-          <Image style={stylesheet.image} source={theme.assets.rightArrow}/>
+          <Image style={stylesheet.image} source={require("@/assets/images/LightRightArrow.png")}/>
         </TouchableOpacity>
       </View>
     </View>
