@@ -38,8 +38,8 @@ What the user can do
 ### PREVIEW
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=_bheJk74zWc">
-    <img src="https://img.youtube.com/vi/_bheJk74zWc/0.jpg" alt="Video Title">
+  <a href="https://www.youtube.com/watch?v=MWrJ4nQAozQ">
+    <img src="https://img.youtube.com/vi/MWrJ4nQAozQ/0.jpg" alt="Video Title">
   </a>
 </p> 
 
